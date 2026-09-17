@@ -21,6 +21,17 @@ from .const import (
 from .calendar import _EXAM_TYPES, _parse_notification_date
 from .event import _event_type_value
 from .entity_helpers import student_device_info
+from .school_sensors import (
+    EduPageCurrentLessonSensor,
+    EduPageFirstLessonSensor,
+    EduPageLastArrivalSensor,
+    EduPageLastChipSensor,
+    EduPageLastDepartureSensor,
+    EduPageLastFoodServedSensor,
+    EduPageNextLessonSensor,
+    EduPageSchoolEndSensor,
+    school_context_sensors,
+)
 
 _LOGGER = logging.getLogger("custom_components.homeassistant_edupage")
 
@@ -181,9 +192,7 @@ async def async_setup_entry(
             coordinator, student_id, student_name, "missing_teachers"
         )
     )
-    sensors.append(
-        EduPageRingingSensor(coordinator, student_id, student_name)
-    )
+    sensors.append(EduPageRingingSensor(coordinator, student_id, student_name))
     sensors.append(
         EduPageTermAverageSensor(
             coordinator,
@@ -210,6 +219,7 @@ async def async_setup_entry(
             term_key="second",
         )
     )
+    sensors.extend(school_context_sensors(coordinator, student_id, student_name))
 
     async_add_entities(sensors, True)
 
@@ -226,9 +236,7 @@ class EduPageAssignmentSensor(StateRestoringSensor):
         self._student_name = student_name or str(student_id)
         student = coordinator.data.get("student", {}) if coordinator.data else {}
         self._student_class_names = student.get("class_names", [])
-        self._attr_device_info = student_device_info(
-            student_id, self._student_name
-        )
+        self._attr_device_info = student_device_info(student_id, self._student_name)
 
     @property
     def _notifications(self):
@@ -237,8 +245,7 @@ class EduPageAssignmentSensor(StateRestoringSensor):
             return []
         return [
             notification
-            for notification in self.coordinator.data.get("notifications", [])
-            or []
+            for notification in self.coordinator.data.get("notifications", []) or []
             if event_matches_student(
                 notification,
                 self._student_id,
@@ -360,11 +367,7 @@ class EduPageNextHomeworkDeadlineSensor(EduPageAssignmentSensor):
             and (due := self._due_date(item)) is not None
             and due >= today
         ]
-        return (
-            min(candidates, key=lambda candidate: candidate[0])
-            if candidates
-            else None
-        )
+        return min(candidates, key=lambda candidate: candidate[0]) if candidates else None
 
     @property
     def state(self):
@@ -381,9 +384,7 @@ class EduPageNextHomeworkDeadlineSensor(EduPageAssignmentSensor):
         if self._next_homework is None:
             return attributes
 
-        additional_data = (
-            getattr(self._next_homework, "additional_data", None) or {}
-        )
+        additional_data = getattr(self._next_homework, "additional_data", None) or {}
         subject_id = additional_data.get("predmetid")
         subject = next(
             (
@@ -432,7 +433,9 @@ class EduPageSubjectSensor(StateRestoringSensor):
         except (TypeError, ValueError):
             return None
 
-    def __init__(self, coordinator, student_id, student_name, subject_name, subject_id, grades=None):
+    def __init__(
+        self, coordinator, student_id, student_name, subject_name, subject_id, grades=None
+    ):
         super().__init__(coordinator)
 
         self._student_id = student_id
@@ -490,15 +493,14 @@ class EduPageSubjectSensor(StateRestoringSensor):
                     attributes[f"grade_{i+1}_percent"] = grade.percent
                 if grade.comment:
                     attributes[f"grade_{i+1}_comment"] = grade.comment
-                attributes[f"grade_{i+1}_date"] = grade.date.strftime("%Y-%m-%d %H:%M:%S")
+                attributes[f"grade_{i+1}_date"] = grade.date.strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
 
                 teacher_name = grade.teacher.name if grade.teacher else "neznámy"
                 attributes[f"grade_{i+1}_teacher"] = teacher_name
 
-            latest_grade = max(
-                current_grades,
-                key=lambda grade: grade.date,
-            )
+            latest_grade = max(current_grades, key=lambda grade: grade.date)
             attributes["latest_grade"] = latest_grade.grade_n
             attributes["latest_grade_title"] = latest_grade.title
 
@@ -516,9 +518,7 @@ class EduPageSubjectSensor(StateRestoringSensor):
             optional_latest_attributes = {
                 "latest_grade_comment": getattr(latest_grade, "comment", None),
                 "latest_grade_percent": getattr(latest_grade, "percent", None),
-                "latest_grade_max_points": getattr(
-                    latest_grade, "max_points", None
-                ),
+                "latest_grade_max_points": getattr(latest_grade, "max_points", None),
                 "latest_grade_class_avg_grade": getattr(
                     latest_grade, "class_grade_avg", None
                 ),
@@ -594,8 +594,7 @@ class EduPageNotificationSensor(StateRestoringSensor):
             item = {
                 "id": event.event_id,
                 "type": (
-                        getattr(event.event_type, "value", None)
-                        or str(event.event_type)
+                    getattr(event.event_type, "value", None) or str(event.event_type)
                 ),
                 "text": event.text,
                 "timestamp": event.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
@@ -611,9 +610,7 @@ class EduPageNotificationSensor(StateRestoringSensor):
 
             if event.author:
                 item["author"] = (
-                    event.author.name
-                    if hasattr(event.author, "name")
-                    else event.author
+                    event.author.name if hasattr(event.author, "name") else event.author
                 )
 
             if (recipient := event_recipient(event)) is not None:
@@ -627,16 +624,11 @@ class EduPageNotificationSensor(StateRestoringSensor):
                 f"event_{event_number}_timestamp": item["timestamp"],
             }
 
-            for optional_key in (
-                "deadline",
-                "subject",
-                "author",
-                "recipient",
-            ):
+            for optional_key in ("deadline", "subject", "author", "recipient"):
                 if optional_key in item:
-                    flat_attributes[
-                        f"event_{event_number}_{optional_key}"
-                    ] = item[optional_key]
+                    flat_attributes[f"event_{event_number}_{optional_key}"] = item[
+                        optional_key
+                    ]
 
             candidate_events = [*events, item]
             candidate_attributes = {
@@ -644,9 +636,7 @@ class EduPageNotificationSensor(StateRestoringSensor):
                 **flat_attributes,
                 "events": candidate_events,
                 "events_exposed": len(candidate_events),
-                "events_truncated": (
-                        len(candidate_events) < len(notifications)
-                ),
+                "events_truncated": (len(candidate_events) < len(notifications)),
             }
 
             serialized_size = len(
@@ -731,9 +721,7 @@ class EduPageSubstitutionSensor(StateRestoringSensor):
     @property
     def state(self):
         if self._data_is_fresh():
-            return self._set_value(
-                len(self.coordinator.data.get(self._data_key) or [])
-            )
+            return self._set_value(len(self.coordinator.data.get(self._data_key) or []))
         if self._last_value is not None:
             return self._last_value
         return 0
@@ -772,9 +760,7 @@ class EduPageRingingSensor(StateRestoringSensor):
         self._student_name = _subject_slug(student_name)
         self._attr_device_info = student_device_info(student_id, student_name)
         self._attr_name = f"EduPage - Najbližšie zvonenie {student_name}"
-        self._unique_id = (
-            f"edupage_next_ringing_{self._student_id}_{self._student_name}"
-        )
+        self._unique_id = f"edupage_next_ringing_{self._student_id}_{self._student_name}"
 
     @property
     def unique_id(self):
@@ -829,9 +815,7 @@ class EduPageTermAverageSensor(StateRestoringSensor):
 
     @property
     def _current_grades(self):
-        return self.coordinator.data.get("grades_per_term", {}).get(
-            self._term_key, []
-        )
+        return self.coordinator.data.get("grades_per_term", {}).get(self._term_key, [])
 
     @property
     def _school_year(self):
