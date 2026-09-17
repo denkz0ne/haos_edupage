@@ -2,14 +2,18 @@
 
 ## Cieľ
 
-Rozšíriť fork `denkz0ne/haos_edupage` tak, aby neposkytoval iba rozvrh, známky a jedáleň, ale aj použiteľné školské fakty pre Home Assistant automácie, Recorder a dashboardy. Integrácia nebude meniť `person.*` ani `device_tracker.*`; telefón/GPS zostáva samostatným zdrojom polohy a EduPage poskytuje školský kontext.
+Rozšíriť fork `denkz0ne/haos_edupage` o použiteľný školský kontext pre Home Assistant automácie, Recorder a dashboardy. Integrácia nebude meniť `person.*`, `device_tracker.*` ani zóny. Telefón/GPS zostáva samostatným zdrojom fyzickej polohy; EduPage poskytuje školské fakty.
 
 ## Rozsah verzie 2026.09.2
 
-Pridať tieto entity pre každé dieťa/config entry:
+Pridať pre každé dieťa/config entry:
 
+- `sensor.posledne_pipnutie`
 - `sensor.posledny_prichod_do_skoly`
+- `sensor.posledny_odchod_zo_skoly`
 - `binary_sensor.prichod_do_skoly_dnes`
+- `binary_sensor.odchod_zo_skoly_dnes`
+- `binary_sensor.v_skole_podla_edupage`
 - `sensor.posledny_vydaj_stravy`
 - `binary_sensor.obed_vydany_dnes`
 - `sensor.aktualna_hodina`
@@ -18,193 +22,216 @@ Pridať tieto entity pre každé dieťa/config entry:
 - `sensor.koniec_vyucovania`
 - `binary_sensor.skola_dnes`
 
-Existujúce kalendáre a entity ostávajú zachované, vrátane kalendára rozvrhu, jedálne, DÚ/písomiek, event entity a TODO.
+Existujúce kalendáre, známky, TODO, jedáleň, zvonenie, suplovanie a event entity zostávajú zachované.
 
-## Zdroje dát a istota významu
+## Význam `pipnutie`
 
-### Spoľahlivo použiteľné
+Reálne údaje používateľa potvrdili, že `pipnutie` nie je iba príchod do školy. Je to všeobecná timeline udalosť vznikajúca po priložení čipu k čítačke. EduPage UI pri rovnakom event type zobrazuje napríklad `Príchod 17.09.2026 07:56:58` aj `Odchod 17.09.2026 11:58:26`.
 
-- `pipnutie` — EduPage API ho explicitne označuje ako `ARRIVAL_TO_SCHOOL`; používa sa na posledný príchod do školy a príchod dnes.
-- `strava_vydaj` — EduPage API ho explicitne označuje ako `FOOD_SERVED`; používa sa na posledný výdaj stravy a obed vydaný dnes.
-- `timetable` / `cancelled_lessons` — používajú sa na časové školské entity.
-- `next_ringing` — ostáva existujúcim údajom/senzorom.
+Preto sa `pipnutie` nesmie automaticky mapovať na príchod. Smer sa klasifikuje samostatne:
 
-### Zatiaľ iba diagnostické
+1. ak neskôr diagnostika odhalí bezpečný strojový údaj v `additional_data`, môže dostať prioritu,
+2. pre 2026.09.2 je overený fallback začiatok textu `Príchod` / `Odchod` (case-insensitive, diakritika tolerantná),
+3. iné `pipnutie` je `other/unknown` a nesmie meniť stav `v škole`.
 
-- `h_attendance` — v aktuálnom `edupage-api` ide iba o timeline event type bez samostatného attendance modelu alebo endpointu. V tejto verzii sa z neho nebude odvodzovať konkrétna absencia, ospravedlnenie ani meškanie.
-- `h_process`, `h_processtypes` — nebudú použité na vyzdvihovanie/družinu v 2026.09.2.
+`strava_vydaj` zostáva samostatným a presnejším zdrojom skutočného výdaja jedla. Obed sa nebude odvodzovať iba z generic `pipnutie`.
+
+## Zdroje dát
+
+Spoľahlivo použiteľné:
+
+- `pipnutie` + klasifikácia `Príchod`/`Odchod`,
+- `strava_vydaj` (`FOOD_SERVED`),
+- `timetable` a `cancelled_lessons`,
+- `next_ringing`,
+- timeline typy zmeny rozvrhu/suplovania.
+
+Zatiaľ diagnostické iba:
+
+- `h_attendance` — bez potvrdeného attendance modelu/endpointu,
+- `h_process`, `h_processtypes` — bez interpretácie vyzdvihovania/družiny.
 
 ## Architektúra pollingu
 
 Zachovať jeden `DataUpdateCoordinator`, ale rozdeliť dáta na dve frekvencie.
 
-### Fast data — približne každé 2 minúty
+### Fast data — každé približne 2 minúty
 
-- timeline/notifications
-- odvodené školské udalosti z `pipnutie` a `strava_vydaj`
+- timeline/notifications,
+- nové `pipnutie`,
+- `strava_vydaj`,
+- detekcia udalostí, ktoré invalidujú rozvrh/suplovanie.
 
 ### Slow data — približne každých 30 minút
 
-- timetable
-- cancelled lessons
-- canteen menu
-- timetable changes
-- missing teachers
-- ringing
-- grades
-- subjects
-- grades per term
-- school year
+- timetable a cancelled lessons,
+- canteen menu,
+- timetable changes,
+- missing teachers,
+- ringing,
+- grades,
+- subjects,
+- grades per term,
+- school year,
+- class metadata.
 
-Koordinátor bude tickovať približne každé 2 minúty. Slow sekcie sa znovu stiahnu iba vtedy, keď od ich posledného úspešného fetchu uplynulo približne 30 minút; inak sa použije posledná cache v koordinátore. Cieľom je nezdvojnásobiť existujúcu záťaž na EduPage API iba kvôli rýchlejším timeline udalostiam.
+Koordinátor tickuje približne každé 2 minúty. Slow sekcie sa opätovne sťahujú len po TTL približne 30 minút. Pri prvom štarte sa načítajú fast aj slow dáta.
 
-Pri prvom štarte config entry sa načítajú fast aj slow dáta.
+Ak fast timeline objaví nový `substitution`, `h_substitution`, `timetable`, `h_timetable`, `changeroom` alebo `bookroom`, slow cache rozvrhu/suplovania sa invaliduje a obnoví v tom istom alebo najbližšom fast cykle bez čakania na TTL.
 
-Ak fast timeline zachytí udalosť `substitution`, `h_substitution`, `timetable` alebo `h_timetable`, cache rozvrhu/suplovania sa označí ako neaktuálna a príslušné timetable sekcie sa obnovia bez čakania na 30-minútový TTL. Nástenka tak dostane zmenu rozvrhu typicky v rámci nasledujúceho fast cyklu.
+Fast zlyhanie nesmie zmazať posledné známe notifications ani slow cache. Zlyhanie jednej slow sekcie nesmie zmazať predchádzajúcu úspešnú hodnotu danej sekcie ani ostatné sekcie.
 
-## Filtrovanie udalostí podľa dieťaťa
+## Filtrovanie podľa dieťaťa
 
-Všetky `pipnutie` a `strava_vydaj` udalosti musia prejsť existujúcou logikou `event_matches_student(...)`, aby dve deti v jednom rodičovskom účte nedostali rovnaký stav.
+Všetky `pipnutie` a `strava_vydaj` udalosti musia prejsť existujúcim `event_matches_student(...)`. Ak event nemožno bezpečne priradiť konkrétnemu dieťaťu, nesmie ovplyvniť jeho stavové entity.
 
-Ak event nie je možné bezpečne priradiť ku konkrétnemu dieťaťu, nesmie ovplyvniť jeho stavovú entitu.
+## Nové entity
 
-## Význam nových entít
+### `sensor.posledne_pipnutie`
 
-### Posledný príchod do školy
+Timestamp najnovšieho `pipnutie` pre dieťa. Device class `timestamp`. Malý atribút `direction` má hodnotu `arrival`, `departure` alebo `other`.
 
-Timestamp najnovšieho `pipnutie` eventu patriaceho danému dieťaťu. Použiť device class `timestamp`.
+### `sensor.posledny_prichod_do_skoly`
 
-### Príchod do školy dnes
+Timestamp najnovšieho rozpoznaného `Príchod` eventu pre dieťa.
 
-`on`, ak existuje `pipnutie` pre dané dieťa s lokálnym dátumom zhodným s dneškom Home Assistantu. Po zmene dňa sa stav prepočíta pri najbližšom fast cykle, aj keď nepríde nový EduPage event.
+### `sensor.posledny_odchod_zo_skoly`
 
-### Posledný výdaj stravy
+Timestamp najnovšieho rozpoznaného `Odchod` eventu pre dieťa.
 
-Timestamp najnovšieho `strava_vydaj` eventu patriaceho danému dieťaťu. Device class `timestamp`.
+### `binary_sensor.prichod_do_skoly_dnes`
 
-### Obed vydaný dnes
+`on`, ak existuje dnešný rozpoznaný príchod.
 
-`on`, ak existuje dnešný `strava_vydaj` event daného dieťaťa. Neodvodzovať z objednaného menu; ide o reálny evidovaný výdaj. Po zmene dňa sa stav prepočíta pri najbližšom fast cykle.
+### `binary_sensor.odchod_zo_skoly_dnes`
 
-### Škola dnes
+`on`, ak existuje dnešný rozpoznaný odchod.
 
-`on`, ak má dnešný deň aspoň jednu neodpadnutú vyučovaciu hodinu v timetable dátach. Samotné `pipnutie` tento senzor neurčuje.
+### `binary_sensor.v_skole_podla_edupage`
 
-### Prvá hodina
+- `on`, ak najnovší dnešný rozpoznaný príchod/odchod je `Príchod`,
+- `off`, ak najnovší dnešný rozpoznaný príchod/odchod je `Odchod`,
+- `unknown`/`None`, ak dnes neexistuje žiadny rozpoznaný príchod/odchod.
 
-Začiatok prvej neodpadnutej dnešnej hodiny ako timestamp. Ak dnes nie je vyučovanie, stav je `unknown`/`None`.
+Iné čipnutia stav nemenia. Tento senzor je iba stav podľa EduPage čipu; nemení `person.*` a môže byť nepresný, ak dieťa čip nepoužije.
 
-### Koniec vyučovania
+### `sensor.posledny_vydaj_stravy`
 
-Koniec poslednej neodpadnutej dnešnej hodiny ako timestamp. Ak posledná hodina odpadne, výsledok sa odvodí z poslednej zostávajúcej hodiny.
+Timestamp najnovšieho `strava_vydaj` pre dieťa.
 
-### Aktuálna hodina
+### `binary_sensor.obed_vydany_dnes`
 
-Textový stav = názov predmetu práve prebiehajúcej hodiny. Atribúty môžu obsahovať začiatok, koniec, učebňu a učiteľov, ak sú dostupné. Ak práve neprebieha žiadna hodina, stav je `None`/`unknown`.
+`on`, ak existuje dnešný `strava_vydaj`. Neodvodzuje sa z objednaného menu.
 
-### Ďalšia hodina
+### `binary_sensor.skola_dnes`
 
-Textový stav = názov najbližšej budúcej neodpadnutej hodiny, prednostne dnes, inak najbližší deň v načítanom horizonte. Atribúty môžu obsahovať dátum, začiatok, koniec, učebňu a učiteľov.
+`on`, ak má dnešok aspoň jednu neodpadnutú hodinu.
+
+### `sensor.prva_hodina`
+
+Timestamp začiatku prvej neodpadnutej dnešnej hodiny.
+
+### `sensor.koniec_vyucovania`
+
+Timestamp konca poslednej neodpadnutej dnešnej hodiny. Odpadnutá posledná hodina sa nepočíta.
+
+### `sensor.aktualna_hodina`
+
+Textový stav = predmet práve prebiehajúcej hodiny. Atribúty: začiatok, koniec, učebňa, učitelia, ak sú dostupné.
+
+### `sensor.dalsia_hodina`
+
+Textový stav = najbližšia budúca neodpadnutá hodina, najprv dnes, potom ďalší deň v načítanom horizonte. Atribúty: dátum, začiatok, koniec, učebňa, učitelia.
+
+## Event entity a automácie
+
+Existujúci `pipnutie -> arrival_at_school` mapping je príliš široký. V 2026.09.2 sa `pipnutie` mapuje dynamicky:
+
+- rozpoznaný príchod -> `arrival_at_school`,
+- rozpoznaný odchod -> `departure_from_school`,
+- ostatné/neurčené čipnutie -> `chip_scan`.
+
+Existujúci `arrival_at_school` trigger zostáva zachovaný pre príchody. Pribudnú `departure_from_school` a `chip_scan`.
 
 ## Recorder a história
 
-Nové entity budú štandardné HA entity a teda budú zapisované do Recorderu podľa bežnej HA konfigurácie používateľa.
+Nové entity sú štandardné HA entity a zapisujú sa do Recorderu podľa používateľovej konfigurácie. Timestamp/binary stavy ostávajú malé; celé timeline payloady sa do stavových atribútov nových entít nevkladajú.
 
-Timestamp a binary entity musia mať malé stabilné stavy. Nevkladať celé timeline payloady ani dlhé zoznamy udalostí do atribútov stavových entít.
-
-Tým vznikne použiteľná história napríklad pre:
-
-- časy príchodov do školy,
-- časy vydania obeda,
-- dni so školou,
-- zmeny prvej/poslednej hodiny.
+História umožní sledovať napríklad príchody, odchody, výdaj jedla, dni so školou a zmeny začiatku/konca vyučovania.
 
 ## Vzťah k `person.*` a GPS
 
-Integrácia nesmie zapisovať ani meniť:
-
-- `person.*`
-- `device_tracker.*`
-- HA zones
-
-EduPage entity sú samostatný zdroj faktov. Výsledný stav typu `doma / v škole / vonku` sa bude skladať neskôr v HA automatizácii/template z telefónu/GPS + školských entít.
-
-V 2026.09.2 sa zámerne nepridáva `binary_sensor.v_skole`, pretože máme spoľahlivý príchod, ale zatiaľ nie spoľahlivý odchod/družinu.
+Integrácia nesmie zapisovať ani meniť `person.*`, `device_tracker.*` ani zóny. `binary_sensor.v_skole_podla_edupage` je samostatný školský fakt. Výsledný stav `doma / v škole / vonku` sa skladá neskôr v HA z EduPage + GPS/telefónu.
 
 ## Diagnostika
 
-Rozšíriť privacy-safe diagnostiku o technický prehľad pre event typy:
+Rozšíriť privacy-safe diagnostiku o technický prehľad pre:
 
-- `pipnutie`
-- `strava_vydaj`
-- `h_attendance`
-- `h_process`
-- `h_processtypes`
+- `pipnutie`,
+- `strava_vydaj`,
+- `h_attendance`,
+- `h_process`,
+- `h_processtypes`.
 
-Diagnostika nesmie obsahovať:
+Diagnostika nesmie obsahovať meno, student ID, username, PHPSESSID, subdomain, text správ/eventov, mená autorov/príjemcov ani voľný text.
 
-- meno dieťaťa,
-- student ID,
-- username,
-- PHPSESSID,
-- subdomain,
-- text správ,
-- mená autorov/príjemcov,
-- voľný text z eventov.
-
-Povolené je uviesť napríklad:
+Povolené:
 
 - počet eventov,
 - názvy kľúčov `additional_data`,
 - typy hodnôt,
-- prítomnosť timestamp-like polí,
-- anonymizovanú ukážku tvaru payloadu bez identifikátorov a textového obsahu.
+- názvy timestamp-like kľúčov,
+- privacy-safe klasifikácia `pipnutie` (`arrival/departure/other`),
+- anonymizovaný tvar payloadu ako mapa `key -> type`, bez hodnôt.
 
-Cieľom je pripraviť podklady pre ďalšiu verziu s reálnou dochádzkou (`absent / excused / late`) bez hádania významu polí.
+Cieľom je pripraviť ďalšiu verziu pre reálnu dochádzku (`absent / excused / late`) a prípadne družinu bez hádania.
 
-## Chybové stavy a odolnosť
+## Chybové stavy
 
-- Fast timeline fetch failure nesmie zmazať posledné známe školské udalosti ani slow dáta.
-- Slow fetch failure jednej sekcie nesmie zmazať ostatné sekcie; zachovať existujúci `data_ok` model.
-- Timestamp senzory majú držať poslednú známu hodnotu cez existujúci restore-state vzor tam, kde to dáva význam.
-- Entity založené na dnešnom dátume musia korektne reagovať na zmenu dňa pri najbližšom fast cykle.
-- Pri timetable chybe jedného dieťaťa nesmie dôjsť k zlyhaniu timeline/meal/attendance kontextu druhého dieťaťa ani tej istej config entry.
+- fast timeline failure zachová posledné známe udalosti,
+- slow section failure zachová poslednú úspešnú hodnotu sekcie,
+- timestamp senzory držia poslednú známu hodnotu cez restore-state tam, kde to dáva význam,
+- denné binary senzory sa prepočítajú pri najbližšom fast cykle po zmene dátumu,
+- chyba timetable nesmie znefunkčniť fast školské eventy.
 
 ## Testovanie
 
-Pridať regresné testy pre:
+Regresné testy musia pokryť:
 
-- oddelenie fast/slow fetchovania,
-- prvý refresh načíta všetky sekcie,
-- ďalší 2-minútový refresh nevolá slow API pred TTL,
-- slow API sa po TTL obnoví,
-- timetable/substitution timeline event invaliduje slow cache a obnoví rozvrh skôr než po TTL,
-- `pipnutie` sa filtruje podľa dieťaťa,
-- `strava_vydaj` sa filtruje podľa dieťaťa,
-- dnešný príchod a dnešný obed,
-- reset denných binary senzorov po zmene dátumu,
+- prvý refresh = fast + slow,
+- ďalší fast refresh pred TTL nevolá slow API,
+- slow refresh po TTL,
+- timetable/substitution event invaliduje slow cache,
+- klasifikáciu `Príchod`, `Odchod`, unknown `pipnutie`,
+- filtrovanie `pipnutie` a `strava_vydaj` podľa dieťaťa,
+- posledné čipnutie/príchod/odchod,
+- príchod dnes, odchod dnes a stav `v škole podľa EduPage`,
+- dnešný výdaj obeda,
 - prvú/aktuálnu/ďalšiu/poslednú hodinu,
-- zrušenú poslednú hodinu,
-- deň bez školy,
-- privacy-safe diagnostiku bez osobných údajov,
-- dve config entry/dve deti bez krížového miešania dát.
+- zrušenú poslednú hodinu a deň bez školy,
+- dynamické HA eventy `arrival_at_school`, `departure_from_school`, `chip_scan`,
+- privacy-safe diagnostiku,
+- dve deti bez krížového miešania dát.
 
 Existujúca test suite musí zostať zelená.
 
 ## Verzia a changelog
 
-Pri implementácii zvýšiť `manifest.json` na `2026.09.2` a doplniť krátky používateľský changelog, napríklad:
+Zvýšiť `manifest.json` na `2026.09.2` a doplniť changelog:
 
-- rýchlejšie spracovanie EduPage udalostí,
-- nové entity príchodu do školy a výdaja stravy,
-- nové entity aktuálnej, ďalšej, prvej a poslednej hodiny,
-- nové entity `Škola dnes`, `Príchod do školy dnes` a `Obed vydaný dnes`,
-- rozšírená bezpečná diagnostika dochádzkových udalostí.
+- rýchlejšie spracovanie timeline udalostí,
+- príchod/odchod a stav v škole podľa čipu,
+- výdaj stravy,
+- aktuálna/ďalšia/prvá/posledná hodina,
+- `Škola dnes`,
+- okamžitejšie obnovenie rozvrhu po zmene,
+- rozšírená privacy-safe diagnostika.
 
 ## Mimo rozsahu 2026.09.2
 
 - Vyzdvihovanie/družina.
 - Priame ovládanie `person.*`.
-- Finálny stav `doma / v škole / vonku` vo vnútri integrácie.
+- Finálny kombinovaný stav `doma / v škole / vonku` vo vnútri integrácie.
 - Mark homework done, message read/reply/star, attachments, excuse absence.
 - Interpretácia `h_attendance` ako konkrétnej absencie bez overeného payloadu.
+- Skracovanie friendly names na `[PE]/[EE]`; to príde v samostatnej zmene až po merge 2026.09.2.
