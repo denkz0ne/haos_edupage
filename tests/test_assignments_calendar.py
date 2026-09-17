@@ -88,10 +88,8 @@ def test_homework_maps_to_all_day_calendar_event(assignments_calendar):
 
     assert event.start == date(2026, 9, 20)
     assert event.end == date(2026, 9, 21)
-    assert event.summary == "[Homework] Maths: Read chapter 1"
-    assert event.description == (
-        "Type: Homework\nSubject: Maths\nAuthor: Mrs Teacher"
-    )
+    assert event.summary == "[DÚ] Maths: Read chapter 1"
+    assert event.description == "Typ: DÚ\nPredmet: Maths\nZadal: Mrs Teacher"
 
 
 def test_completed_homework_is_marked(assignments_calendar):
@@ -100,7 +98,7 @@ def test_completed_homework_is_marked(assignments_calendar):
         _notification(1, is_done=True)
     )
 
-    assert event.summary == "[Completed] [Homework] Maths: Read chapter 1"
+    assert event.summary == "[Splnené] [DÚ] Maths: Read chapter 1"
 
 
 def test_exam_types_map_to_exam_event(assignments_calendar):
@@ -109,8 +107,8 @@ def test_exam_types_map_to_exam_event(assignments_calendar):
         _notification(2, event_type=_EventType.EXAM, text="Algebra test")
     )
 
-    assert event.summary == "[Exam] Maths: Algebra test"
-    assert event.description.startswith("Type: Exam")
+    assert event.summary == "[Písomka/skúšanie] Maths: Algebra test"
+    assert event.description.startswith("Typ: Písomka/skúšanie")
 
 
 def test_unsupported_or_undated_notifications_are_ignored(assignments_calendar):
@@ -155,7 +153,7 @@ async def test_get_events_filters_range_and_sorts(assignments_calendar):
     )
 
     assert [event.start for event in events] == [date(2026, 9, 20)]
-    assert events[0].summary.startswith("[Exam]")
+    assert events[0].summary.startswith("[Písomka/skúšanie]")
 
 
 async def test_get_events_supports_partial_day_range(assignments_calendar):

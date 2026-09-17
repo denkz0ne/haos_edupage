@@ -97,7 +97,7 @@ class EduPageEventEntity(CoordinatorEntity, EventEntity):
         super().__init__(coordinator)
         self._student_id = student_id
         self._student_name = student_name or str(student_id)
-        self._attr_name = f"EduPage - Events {self._student_name}"
+        self._attr_name = f"EduPage - Udalosti {self._student_name}"
         self._attr_unique_id = f"edupage_events_{self._student_id}"
         self._attr_device_info = student_device_info(
             self._student_id, self._student_name

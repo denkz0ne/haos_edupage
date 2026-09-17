@@ -1,60 +1,68 @@
-[![HACS](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
-[![Validate with hassfest](https://github.com/rine77/homeassistantedupage/actions/workflows/hassfest.yml/badge.svg)](https://github.com/rine77/homeassistantedupage/actions/workflows/hassfest.yml)
-[![Tests](https://github.com/rine77/homeassistantedupage/actions/workflows/tests.yml/badge.svg)](https://github.com/rine77/homeassistantedupage/actions/workflows/tests.yml)
+[![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![Hassfest](https://github.com/denkz0ne/haos_edupage/actions/workflows/hassfest.yml/badge.svg)](https://github.com/denkz0ne/haos_edupage/actions/workflows/hassfest.yml)
+[![Testy](https://github.com/denkz0ne/haos_edupage/actions/workflows/tests.yml/badge.svg)](https://github.com/denkz0ne/haos_edupage/actions/workflows/tests.yml)
 
-# EduPage for Home Assistant
+# EduPage pre Home Assistant
 
-EduPage for Home Assistant is an unofficial custom integration for the [EduPage](https://www.edupage.org/) school information system. It imports school data into Home Assistant so it can be displayed in calendars and dashboards or used in templates, scripts, and automations.
+EduPage pre Home Assistant je neoficiálna vlastná integrácia školského informačného systému [EduPage](https://www.edupage.org/) do Home Assistanta. Údaje zo školy sprístupňuje ako kalendáre, senzory, udalosti, zoznam úloh a akcie, takže ich možno zobrazovať na dashboardoch alebo používať v šablónach, skriptoch a automatizáciách.
 
-The integration is based on the [edupage-api](https://github.com/EdupageAPI/edupage-api) Python library.
+Tento repozitár je slovenský fork projektu [`rine77/homeassistantedupage`](https://github.com/rine77/homeassistantedupage). Integrácia používa neoficiálnu Python knižnicu [`edupage-api`](https://github.com/EdupageAPI/edupage-api).
 
 > [!IMPORTANT]
-> This project is not affiliated with or supported by EduPage. The information available to Home Assistant depends on the features enabled by the school and the permissions of the EduPage account.
+> Projekt nie je prepojený so spoločnosťou aSc Applied Software ani oficiálne podporovaný službou EduPage. Rozsah údajov dostupných v Home Assistante závisí od funkcií zapnutých školou, typu účtu a jeho oprávnení.
 
-## Features
+## Funkcie
 
-- Lesson calendar with upcoming and cancelled lessons
-- Canteen calendar for snacks, lunches, and afternoon snacks
-- Assignments calendar for homework deadlines and exams
-- Configurable per-subject grade sensors
-- Notification sensor covering all available EduPage event types
-- Event entity for automation-friendly new grade, homework, message, exam,
-  timetable-change, and school-arrival events
-- Read-only homework to-do list with deadlines and completion status
-- Summary sensors for open and overdue homework, the next deadline, and
-  upcoming exams
-- Structured, bounded notification data for dashboards and automations
-- Sensors for timetable changes and missing teachers
-- Sensor showing the next school-bell time
-- First- and second-term grade-average sensors
-- Services for choosing, cancelling, and rating meals
-- Service for sending EduPage messages
-- Multiple students and EduPage accounts through separate config entries
-- Modern app-code two-factor authentication
-- Interactive reauthentication when a stored session expires
-- English, German, and Slovak translations
-- Restoration of the last known sensor states after Home Assistant restarts or temporary EduPage outages
+- kalendár vyučovania s budúcimi aj odpadnutými hodinami,
+- kalendár školskej jedálne pre desiatu, obed a olovrant,
+- kalendár domácich úloh a písomiek/skúšania,
+- natívny zoznam domácich úloh `todo` iba na čítanie,
+- nastaviteľné senzory známok podľa predmetov,
+- senzory priemerov známok za 1. a 2. polrok,
+- senzor upozornení pokrývajúci dostupné typy udalostí EduPage,
+- event entita a spúšťače zariadenia pre novú známku, domácu úlohu, správu, písomku/skúšanie, zmenu rozvrhu a zaznamenaný príchod do školy,
+- súhrnné senzory nesplnených domácich úloh, úloh po termíne, najbližšieho termínu a nadchádzajúcich písomiek/skúšania,
+- senzory suplovania/zmien rozvrhu a chýbajúcich učiteľov,
+- senzor najbližšieho školského zvonenia,
+- výber, odhlásenie a hodnotenie stravy,
+- odosielanie správ cez EduPage,
+- viac žiakov a účtov pomocou samostatných konfiguračných záznamov,
+- dvojstupňové overenie pomocou kódu z aplikácie EduPage,
+- opätovné prihlásenie po vypršaní relácie,
+- obnova posledných známych stavov po reštarte Home Assistanta alebo dočasnom výpadku EduPage,
+- diagnostika s anonymizovaným súhrnom dostupných schopností a údajov.
 
-## Installation
+## Požiadavky
 
-Version 0.8.0 and later require Home Assistant 2023.11.0 or newer because the
-integration provides a native to-do entity.
+Verzia integrácie 0.8.0 a novšia vyžaduje Home Assistant 2023.11.0 alebo novší, pretože používa natívnu entitu zoznamu úloh.
 
-### HACS
+## Inštalácia
 
-1. Open **HACS** in Home Assistant.
-2. Select **Integrations**.
-3. Search for **EduPage** or **homeassistantedupage**.
-4. Install the integration.
-5. Restart Home Assistant when requested.
+### HACS – odporúčaný spôsob pre tento fork
 
-### Manual installation
+Tento fork sa používa ako vlastný HACS repozitár a nie je potrebné kopírovať súbory ručne.
 
-1. Download this repository.
-2. Copy `custom_components/homeassistantedupage` into the `custom_components` directory of your Home Assistant configuration.
-3. Restart Home Assistant.
+1. Otvorte **HACS**.
+2. V ponuke vpravo hore zvoľte **Custom repositories / Vlastné repozitáre**.
+3. Ako repozitár zadajte:
 
-The resulting directory should look like this:
+   `https://github.com/denkz0ne/haos_edupage`
+
+4. Ako typ zvoľte **Integration**.
+5. Pridajte repozitár a vyhľadajte **EduPage pre Home Assistant**.
+6. Integráciu stiahnite/nainštalujte.
+7. Reštartujte Home Assistant.
+8. Otvorte **Nastavenia → Zariadenia a služby → Pridať integráciu** a vyhľadajte **EduPage**.
+
+Ak ste predtým používali pôvodný repozitár `rine77/homeassistantedupage`, v HACS používajte iba jeden z oboch zdrojov. Doména integrácie zostáva `homeassistantedupage`, aby sa zachovala kompatibilita existujúcich konfiguračných záznamov, entít a automatizácií.
+
+### Ručná inštalácia
+
+1. Stiahnite tento repozitár.
+2. Priečinok `custom_components/homeassistantedupage` skopírujte do priečinka `custom_components` v konfigurácii Home Assistanta.
+3. Reštartujte Home Assistant.
+
+Výsledná štruktúra má vyzerať približne takto:
 
 ```text
 config/
@@ -65,196 +73,171 @@ config/
         └── ...
 ```
 
-## Configuration
+## Nastavenie integrácie
 
-1. Open **Settings → Devices & services** in Home Assistant.
-2. Select **Add integration**.
-3. Search for **EduPage**.
-4. Enter the EduPage username, password, and school subdomain.
-5. Complete two-factor authentication if requested.
-6. Select the student whose data should be imported.
+1. Otvorte **Nastavenia → Zariadenia a služby**.
+2. Zvoľte **Pridať integráciu**.
+3. Vyhľadajte **EduPage**.
+4. Zadajte používateľské meno, heslo a subdoménu školy.
+5. Ak EduPage vyžiada dvojstupňové overenie, zadajte aktuálny kód z aplikácie.
+6. Vyberte žiaka, ktorého údaje chcete načítavať.
 
-For a school URL such as `https://example.edupage.org`, enter `example` as the subdomain.
+Ak má škola adresu napríklad `https://mojaskola.edupage.org`, ako subdoménu zadajte `mojaskola`.
 
-Create a separate config entry for every student you want to expose. This also applies when an account contains multiple students or when several EduPage accounts use the same school domain.
+Pre každého žiaka vytvorte samostatný konfiguračný záznam. Platí to aj vtedy, keď jeden rodičovský účet obsahuje viac detí alebo keď používate viac účtov tej istej školy.
 
-## Authentication and reauthentication
+## Prihlásenie, 2FA a opätovné prihlásenie
 
-The integration supports EduPage's modern app-code two-factor authentication flow. During normal operation, Home Assistant reuses the stored PHP session and does not request a new two-factor code during every update.
+Integrácia podporuje moderné dvojstupňové overenie EduPage pomocou kódu z aplikácie. Pri bežnej prevádzke Home Assistant opakovane používa uloženú PHP reláciu, takže kód 2FA nevyžaduje pri každom načítaní údajov.
 
-Starting with version 0.4.0, newly configured and reauthenticated entries do not store the EduPage password. They store the username, subdomain, selected student, and PHP session ID required for polling. If the session expires or becomes invalid, Home Assistant starts a reauthentication flow and asks for the password again.
+Od verzie 0.4.0 novovytvorené a opätovne prihlásené záznamy neuchovávajú heslo EduPage. Ukladá sa používateľské meno, subdoména, vybraný žiak a identifikátor PHP relácie potrebný na periodické načítavanie údajov. Ak relácia vyprší alebo prestane byť platná, Home Assistant spustí opätovné prihlásenie a heslo si vyžiada znova.
 
-The PHP session ID grants access to the EduPage session and must be treated as sensitive data.
+Hodnota PHP relácie umožňuje prístup k účtu EduPage a treba s ňou zaobchádzať rovnako citlivo ako s heslom.
 
-## Entities
+## Entity
 
-The exact entity IDs are assigned by Home Assistant and may differ from the examples in this document.
+Presné `entity_id` prideľuje Home Assistant. Môžu sa preto líšiť od príkladov v tejto dokumentácii, najmä pri staršej existujúcej inštalácii.
 
-| Entity | State | Details |
+| Entita | Stav | Obsah |
 | --- | --- | --- |
-| Lesson calendar | Current or next lesson | Timetable and cancelled lessons as calendar events |
-| Canteen calendar | Current or next meal | Snack, lunch, and afternoon-snack events |
-| Assignments calendar | Current or next assignment | Homework deadlines and exams as all-day events |
-| Subject sensor | Number of grades | Grade details in attributes |
-| Notification sensor | Number of notifications | Structured events, event counts, and legacy flat attributes |
-| Event entity | Timestamp of the latest supported event | New grade, homework, message, exam, timetable-change, and arrival events |
-| Homework to-do list | Number of incomplete homework items | Native read-only to-do items with deadlines and completion status |
-| Open-homework sensor | Number of incomplete homework items | Includes dated and undated homework |
-| Overdue-homework sensor | Number of overdue homework items | Incomplete homework with a deadline before today |
-| Next-homework-deadline sensor | Date of the next deadline | Includes subject, assignment text, and remaining days in attributes |
-| Upcoming-exams sensor | Number of upcoming exams | Dated exams scheduled for today or later |
-| Timetable-changes sensor | Number of changes today | Changed class, lesson, title, and action |
-| Missing-teachers sensor | Number of missing teachers today | Teacher names and person IDs |
-| Next-ringing sensor | Next ringing time | Ringing type and time |
-| First-term average sensor | Numeric grade average | Grade count and per-subject averages |
-| Second-term average sensor | Numeric grade average | Grade count and per-subject averages |
+| Kalendár vyučovania | aktuálna alebo najbližšia hodina | rozvrh a odpadnuté hodiny |
+| Kalendár jedálne | aktuálne alebo najbližšie jedlo | desiata, obed a olovrant |
+| Kalendár úloh | aktuálna alebo najbližšia položka | domáce úlohy a písomky/skúšanie |
+| Senzor predmetu | počet známok | podrobnosti známok v atribútoch |
+| Senzor upozornení | počet upozornení | štruktúrované udalosti a počty podľa typov |
+| Event entita | čas poslednej podporovanej udalosti | známka, úloha, správa, písomka/skúšanie, rozvrh, príchod |
+| Zoznam domácich úloh | počet nesplnených úloh | natívne položky `todo` s termínmi a stavom splnenia |
+| Nesplnené domáce úlohy | počet | úlohy s termínom aj bez termínu |
+| Domáce úlohy po termíne | počet | nesplnené úlohy so starším termínom |
+| Najbližší termín domácej úlohy | dátum | predmet, zadanie a počet zostávajúcich dní |
+| Najbližšia písomka alebo skúšanie | počet | budúce položky od dnešného dňa |
+| Zmeny v rozvrhu | počet dnešných zmien | trieda, hodina, názov a typ zmeny |
+| Chýbajúci učitelia | počet | mená a identifikátory osôb |
+| Najbližšie zvonenie | čas | typ zvonenia a čas |
+| Priemer za hodnotiace obdobie | číselný priemer | počet známok a priemery podľa predmetov |
 
-Seeing many entities after setup can be expected because EduPage may return every subject offered by the school, including subjects not taken by the selected student and class-like entries. Open **Settings → Devices & services → EduPage → Configure** to select the subjects for which grade sensors should be created. Other EduPage entities are not affected by this selection.
+EduPage môže vrátiť aj predmety, ktoré vybraný žiak reálne nenavštevuje, prípadne technické alebo triedne položky. V **Nastavenia → Zariadenia a služby → EduPage → Konfigurovať** možno vybrať predmety, pre ktoré sa majú vytvárať senzory známok. Ostatné entity tým nie sú ovplyvnené.
 
-Existing installations continue to expose all returned subjects until a selection is explicitly saved. Selecting no subjects disables all per-subject grade sensors.
+Existujúca inštalácia naďalej zobrazuje všetky vrátené predmety, kým výber výslovne neuložíte. Ak nevyberiete žiadny predmet, senzory známok podľa predmetov sa nevytvoria.
 
-## Calendars
+## Kalendáre
 
-### Lesson calendar
+### Vyučovanie
 
-Open **Calendar** in the Home Assistant sidebar to see the imported timetable. The state of a calendar entity normally represents only the event that is active now or comes next. Other lessons remain available in the calendar.
+V bočnom paneli Home Assistanta otvorte **Kalendár**. Stav kalendárovej entity bežne predstavuje iba práve prebiehajúcu alebo najbližšiu udalosť; ostatné hodiny sú stále dostupné v kalendári a cez akciu `calendar.get_events`.
 
-Cancelled lessons are included and marked with a `[Canceled]` prefix.
+Odpadnuté hodiny sú v slovenskej lokalizácii označené prefixom `[Odpadlo]`.
 
-Example dashboard card:
+Príklad karty na dashboarde:
 
 ```yaml
 type: calendar
 entities:
-  - calendar.edupage_example_student
+  - calendar.edupage_priklad_ziaka
 initial_view: listWeek
 ```
 
-Replace the example entity ID with the calendar entity created on your system.
+### Načítanie udalostí kalendára v automatizácii
 
-### Retrieving calendar events in an automation
-
-Use `calendar.get_events` when an automation needs more than the current or next event:
+Ak automatizácia potrebuje viac než aktuálnu alebo najbližšiu udalosť, použite `calendar.get_events`:
 
 ```yaml
 action: calendar.get_events
 target:
-  entity_id: calendar.edupage_example_student
+  entity_id: calendar.edupage_priklad_ziaka
 data:
   duration:
     hours: 24
-response_variable: school_agenda
+response_variable: skolsky_program
 ```
 
-The response variable can then be processed by template actions, for example to determine the first lesson of the day.
+Výstup možno ďalej spracovať v šablónach, napríklad na zistenie prvej vyučovacej hodiny dňa.
 
-See the [Home Assistant calendar documentation](https://www.home-assistant.io/integrations/calendar/) for details.
+Podrobnosti sú v [dokumentácii kalendára Home Assistanta](https://www.home-assistant.io/integrations/calendar/).
 
-### Canteen calendar
+### Školská jedáleň
 
-The canteen calendar is created even when no menu is currently available. If supported by the school, it contains snack, lunch, and afternoon-snack events for the next 14 days.
+Kalendár jedálne sa vytvorí aj vtedy, keď EduPage práve neposkytuje žiadny jedálny lístok. Ak škola funkciu používa, kalendár obsahuje desiatu, obed a olovrant približne na najbližších 14 dní.
 
-A missing or empty menu therefore results in an empty calendar rather than the entity being omitted. Not every school uses the EduPage canteen feature.
+Prázdny alebo nedostupný jedálny lístok teda znamená prázdny kalendár, nie chýbajúcu entitu. Nie každá škola používa modul školskej jedálne v EduPage.
 
-### Assignments calendar
+### Domáce úlohy a písomky/skúšanie
 
-The assignments calendar combines homework deadlines and exams returned by
-EduPage. Both appear as all-day events on their respective date. Homework that
-EduPage reports as completed remains visible and is marked with a `[Completed]`
-prefix.
+Kalendár úloh spája termíny domácich úloh a písomiek/skúšania, ktoré EduPage vráti. Zobrazujú sa ako celodenné udalosti v príslušnom dátume. Domáca úloha, ktorú EduPage eviduje ako splnenú, zostáva viditeľná a je označená prefixom `[Splnené]`.
 
-The calendar is created even when no assignment is currently available. Its
-contents depend on the notifications returned by EduPage, so older entries may
-disappear when EduPage no longer includes their notifications.
-
-Example dashboard card:
+Kalendár sa vytvára aj vtedy, keď momentálne nie je dostupná žiadna úloha. Obsah vychádza z upozornení poskytovaných EduPage; staršie položky preto môžu zmiznúť, keď ich EduPage prestane vracať.
 
 ```yaml
 type: calendar
 entities:
-  - calendar.edupage_assignments_example_student
+  - calendar.edupage_assignments_priklad_ziaka
 initial_view: listWeek
 ```
 
-The `calendar.get_events` action shown above can also be used with this entity
-to retrieve homework deadlines and exams for automations.
+Aj pre tento kalendár možno použiť `calendar.get_events`.
 
-## Homework to-do list
+## Zoznam domácich úloh
 
-The integration creates a native Home Assistant to-do entity for each student,
-even when EduPage currently returns no homework. Its state is the number of
-incomplete homework items. Each item can include the subject, assignment text,
-deadline, completion status, and author.
+Pre každého žiaka sa vytvorí natívna Home Assistant entita `todo`, aj keď EduPage momentálne nevracia žiadnu domácu úlohu. Jej stavom je počet nesplnených domácich úloh. Jednotlivé položky môžu obsahovať predmet, zadanie, termín, stav splnenia a autora.
 
-The entity is read-only because the EduPage API currently exposes homework
-notifications but no supported method for changing homework. Its items reflect
-the homework notifications available to the integration, so older assignments
-may disappear when EduPage no longer returns their notifications.
+Zoznam je momentálne iba na čítanie. Dostupné rozhranie EduPage poskytuje údaje o domácich úlohách, ale integrácia zatiaľ nemá overený podporovaný spôsob, ako z Home Assistanta meniť stav splnenia späť v EduPage.
 
-Use `todo.get_items` to retrieve incomplete homework in an automation:
+Nesplnené domáce úlohy možno získať v automatizácii pomocou `todo.get_items`:
 
 ```yaml
 action: todo.get_items
 target:
-  entity_id: todo.edupage_homework_example_student
+  entity_id: todo.edupage_homework_priklad_ziaka
 data:
   status:
     - needs_action
-response_variable: homework
+response_variable: domace_ulohy
 ```
 
-Replace the example entity ID with the to-do entity created on your system.
+## Súhrnné senzory domácich úloh a písomiek
 
-## Assignment summary sensors
+Štyri senzory poskytujú jednoduché stavy vhodné na dashboard a automatizácie:
 
-Four sensors provide compact states for dashboards and automations:
+- **Počet nesplnených domácich úloh** – zahŕňa aj úlohy bez termínu,
+- **Počet domácich úloh po termíne** – nesplnené úlohy s termínom pred dnešným dňom,
+- **Najbližší termín domácej úlohy** – najbližší termín od dnešného dňa; atribúty obsahujú predmet, zadanie a počet zostávajúcich dní,
+- **Najbližšia písomka alebo skúšanie** – počet budúcich položiek s dátumom dnes alebo neskôr.
 
-- **Open homework** counts every incomplete homework notification, including
-  assignments without a deadline.
-- **Overdue homework** counts incomplete homework with a deadline before today.
-- **Next homework deadline** exposes the nearest incomplete deadline from today
-  onward. Its attributes include the subject, assignment text, and the number
-  of remaining days.
-- **Upcoming exams** counts dated exams scheduled for today or later.
-
-All four sensors retain their last known state during a temporary EduPage
-notification outage and expose `data_stale: true` while that value is stale.
-
-Example entities card:
+Pri dočasnom výpadku upozornení z EduPage si senzory ponechajú posledný známy stav a pomocou atribútu `data_stale: true` označia, že údaje nie sú čerstvé.
 
 ```yaml
 type: entities
-title: School overview
+title: Škola
 entities:
-  - entity: sensor.edupage_open_homework_example_student
-    name: Open homework
-  - entity: sensor.edupage_overdue_homework_example_student
-    name: Overdue homework
-  - entity: sensor.edupage_next_homework_deadline_example_student
-    name: Next deadline
-  - entity: sensor.edupage_upcoming_exams_example_student
-    name: Upcoming exams
+  - entity: sensor.edupage_open_homework_priklad_ziaka
+    name: Nesplnené domáce úlohy
+  - entity: sensor.edupage_overdue_homework_priklad_ziaka
+    name: Domáce úlohy po termíne
+  - entity: sensor.edupage_next_homework_deadline_priklad_ziaka
+    name: Najbližší termín
+  - entity: sensor.edupage_upcoming_exams_priklad_ziaka
+    name: Písomky a skúšanie
 ```
 
-Replace the example entity IDs with the sensors created on your system.
+## Známky podľa predmetov
 
-## Grade sensors
+Integrácia predvolene vytvára senzor pre každý predmet, ktorý EduPage vráti. Výber predmetov v možnostiach integrácie môže tento zoznam obmedziť. Stav senzora je počet načítaných známok z daného predmetu.
 
-By default, the integration creates a sensor for every subject returned by EduPage. The subject selection described above can be used to limit these sensors. Each sensor's state is the number of imported grades for that subject. Grade details are exposed as numbered attributes, for example:
+Príklad atribútov:
 
 ```yaml
 student:
   id: 12345
-  name: Example Student
-grade_1_title: Written test
+  name: Príklad Žiaka
+grade_1_title: Písomná práca
 grade_1_grade_n: 2
 grade_1_date: "2026-08-20 08:00:00"
-grade_1_teacher: Example Teacher
+grade_1_teacher: Príklad Učiteľa
 ```
 
-Depending on the information supplied by the school, attributes may also include maximum points, percentages, class averages, and teacher comments.
+Podľa údajov poskytnutých školou môžu atribúty obsahovať aj maximálny počet bodov, percentá, priemer triedy a komentár učiteľa.
 
-For convenient access to the most recent grade, each subject sensor also exposes the following attributes:
+Pre jednoduchý prístup k najnovšej známke sú k dispozícii aj atribúty:
 
 - `latest_grade`
 - `latest_grade_title`
@@ -265,20 +248,20 @@ For convenient access to the most recent grade, each subject sensor also exposes
 - `latest_grade_max_points`
 - `latest_grade_class_avg_grade`
 
-The latest grade is determined by its date rather than by the order returned by EduPage. Optional attributes are omitted when the corresponding information is not provided by the school.
+Najnovšia známka sa určuje podľa dátumu, nie podľa poradia, v akom ju EduPage vráti. Voliteľné atribúty sa nevytvoria, ak ich škola neposkytuje.
 
-Inspect the sensor under **Developer tools → States** to see its actual entity ID and attributes.
+Skutočné `entity_id` a atribúty si môžete pozrieť v **Nástroje pre vývojárov → Stavy**.
 
-Example template:
+Príklad šablóny:
 
 ```jinja2
-{{ state_attr('sensor.edupage_example_student_mathematics',
+{{ state_attr('sensor.edupage_priklad_ziaka_matematika',
               'grade_1_grade_n') }}
 ```
 
-### Term-average sensors
+### Priemery za hodnotiace obdobie
 
-Separate sensors expose the arithmetic average for numeric grades in the first and second terms. Non-numeric grades are ignored when calculating the average. Their attributes include:
+Samostatné senzory zobrazujú aritmetický priemer číselných známok za 1. a 2. polrok. Nečíselné hodnotenia sa do priemeru nezapočítavajú. Atribúty zahŕňajú:
 
 - `school_year`
 - `term`
@@ -286,118 +269,112 @@ Separate sensors expose the arithmetic average for numeric grades in the first a
 - `grade_average`
 - `subject_averages`
 
-If no numeric grades are available, the sensor reports an unknown value.
+Ak nie je dostupná žiadna číselná známka, stav senzora je neznámy.
 
-## Notifications
+## Upozornenia
 
-The notification sensor counts all notification types returned by EduPage. Its `events` attribute contains the newest events that safely fit within Home Assistant's recorder attribute-size limit, with an additional hard limit of 50 events.
+Senzor upozornení počíta všetky typy upozornení vrátené EduPage. Atribút `events` obsahuje najnovšie udalosti, ktoré sa bezpečne zmestia pod limit veľkosti atribútov rekordéra Home Assistanta; zároveň platí pevný limit 50 udalostí.
+
+Príklad štruktúrovanej udalosti:
 
 ```yaml
 id: 123456
 type: homework
-text: Complete exercises 1–5
+text: Vypracovať cvičenia 1–5
 timestamp: "2026-09-03 10:30:00"
 deadline: "2026-09-05"
-subject: Mathematics
-author: Example Teacher
+subject: Matematika
+author: Príklad Učiteľa
 ```
 
-The `type_counts` attribute contains the number of events grouped by type.
+Atribút `type_counts` obsahuje počty udalostí podľa typu. `event_count` vždy predstavuje celkový počet upozornení vrátených EduPage. `events_exposed` udáva počet udalostí, ktorých detaily sú skutočne uložené v atribútoch, a `events_truncated` označuje, že ďalšie udalosti boli vynechané kvôli veľkostnému limitu.
 
-The `event_count` attribute always contains the total number of notifications returned by EduPage. `events_exposed` reports how many event details are included in the sensor attributes, while `events_truncated` indicates that additional events were omitted to remain below Home Assistant's recorder limit.
+Pre spätnú kompatibilitu sa tie isté zahrnuté udalosti poskytujú aj ako ploché atribúty `event_1_text`, `event_1_deadline`, `event_1_subject` a podobne.
 
-For backward compatibility, the integration also exposes the same included events as flat attributes such as `event_1_text`, `event_1_deadline`, and `event_1_subject`. The structured and flat representations are reduced together so they always refer to the same set of events.
-
-Example Markdown card:
+Príklad Markdown karty:
 
 ```yaml
 type: markdown
-title: Latest EduPage notification
+title: Posledné upozornenie EduPage
 content: >-
-  {% set entity = 'sensor.edupage_notification_example_student' %}
+  {% set entity = 'sensor.edupage_notification_priklad_ziaka' %}
   {% set events = state_attr(entity, 'events') or [] %}
   {% if events %}
     **{{ events[0].subject or events[0].type }}**
 
     {{ events[0].text }}
 
-    Deadline: {{ events[0].deadline or 'not provided' }}
+    Termín: {{ events[0].deadline or 'neuvedený' }}
   {% else %}
-    No notifications available.
+    Nie sú dostupné žiadne upozornenia.
   {% endif %}
 ```
 
-### Using EduPage events in automations
+## Udalosti EduPage a automatizácie
 
-The event entity changes state whenever a new supported EduPage timeline item
-is received after the integration has started. Existing notifications form the
-initial baseline and are not replayed during setup or after a Home Assistant
-restart.
+Event entita zmení stav vždy, keď po spustení integrácie príde nová podporovaná položka časovej osi EduPage. Upozornenia dostupné pri štarte tvoria iba počiatočný základ a po nastavení alebo reštarte Home Assistanta sa spätne neprehrávajú.
 
-The same event types are available as device triggers in Home Assistant's
-visual automation editor. Select the EduPage device for the student and then
-choose the required trigger, such as **A new grade was received** or **New
-homework was received**. Trigger data contains the same structured attributes
-as the event entity.
+Rovnaké typy sú dostupné aj ako spúšťače zariadenia vo vizuálnom editore automatizácií Home Assistanta.
 
-Supported Home Assistant event types are:
+Podporované interné typy udalostí sú:
 
-- `new_grade`
-- `new_homework`
-- `new_message`
-- `new_exam`
-- `timetable_change`
-- `arrival_at_school`
+- `new_grade` – nová známka,
+- `new_homework` – nová domáca úloha,
+- `new_message` – nová správa,
+- `new_exam` – nová písomka alebo skúšanie,
+- `timetable_change` – zmena rozvrhu alebo suplovanie,
+- `arrival_at_school` – zaznamenaný príchod do školy.
 
-Example automation trigger:
+Interné názvy typov udalostí zostávajú po anglicky zámerne, aby sa nerozbila spätná kompatibilita automatizácií.
+
+Príklad automatizácie:
 
 ```yaml
 triggers:
   - trigger: state
-    entity_id: event.edupage_events_example_student
+    entity_id: event.edupage_events_priklad_ziaka
 conditions:
   - condition: template
     value_template: "{{ trigger.to.attributes.event_type == 'new_homework' }}"
 actions:
   - action: notify.notify
     data:
-      title: New homework
+      title: Nová domáca úloha
       message: >-
         {{ trigger.to.attributes.subject or 'EduPage' }}:
         {{ trigger.to.attributes.text }}
 ```
 
-Depending on the event, attributes can include the EduPage event ID, student,
-subject, author, timestamp, deadline, completion state, starred state, and raw
-additional event data. An arrival event only represents a recorded arrival; it
-is not a reliable continuous presence state.
+Podľa typu udalosti môžu atribúty obsahovať ID udalosti EduPage, žiaka, predmet, autora, čas, termín, stav splnenia, označenie hviezdičkou a ďalšie nespracované údaje.
 
-There is currently no dedicated EduPage dashboard card. Home Assistant's standard calendar, entity, Markdown, and template cards can be used instead.
+Udalosť príchodu do školy znamená iba to, že EduPage zaznamenal príchod. Bez spoľahlivej informácie o odchode ju nemožno považovať za trvalý stav „žiak je v škole“.
 
-## Substitution and ringing sensors
+Integrácia zatiaľ nemá vlastnú špeciálnu kartu dashboardu. Použiť možno štandardné karty Home Assistanta – Kalendár, Entity, Markdown a šablónové karty.
 
-The timetable-changes sensor exposes changes reported for the current day. Its state is the number of changes, with details stored in `change_N_*` attributes.
+## Suplovanie, zmeny rozvrhu a zvonenie
 
-The missing-teachers sensor reports the number of missing teachers for the current day and exposes their names and person IDs as attributes.
+Senzor zmien rozvrhu zobrazuje zmeny hlásené pre aktuálny deň. Jeho stav je počet zmien a podrobnosti sú v atribútoch `change_N_*`.
 
-The next-ringing sensor shows the next available school-bell time and whether it announces a lesson or a break.
+Senzor chýbajúcich učiteľov zobrazuje počet chýbajúcich učiteľov v aktuálnom dni a v atribútoch ich mená a identifikátory osôb.
 
-These entities may remain empty or unavailable when the school does not publish the corresponding data through EduPage.
+Senzor najbližšieho zvonenia zobrazuje najbližší dostupný čas školského zvonenia a informáciu, či ide o začiatok/koniec vyučovania alebo prestávku podľa údajov EduPage.
 
-## Services
+Ak škola dané údaje cez EduPage nezverejňuje, tieto entity môžu zostať prázdne alebo nedostupné.
 
-The integration registers the following services under the `homeassistantedupage` domain:
+## Akcie integrácie
 
-| Service | Purpose |
+Integrácia registruje nasledujúce akcie v doméne `homeassistantedupage`:
+
+| Akcia | Účel |
 | --- | --- |
-| `homeassistantedupage.choose_meal` | Choose a menu for a particular date and meal type |
-| `homeassistantedupage.sign_off_meal` | Cancel the selected meal |
-| `homeassistantedupage.rate_meal` | Rate a meal's quantity and quality |
-| `homeassistantedupage.send_message` | Send a message to students or teachers |
+| `homeassistantedupage.choose_meal` | vybrať menu na konkrétny dátum a typ jedla |
+| `homeassistantedupage.sign_off_meal` | odhlásiť vybrané jedlo |
+| `homeassistantedupage.rate_meal` | ohodnotiť množstvo a kvalitu jedla |
+| `homeassistantedupage.send_message` | odoslať správu žiakom alebo učiteľom |
 
-The services appear as actions in Home Assistant's automation and script editors.
+V Home Assistante sa zobrazujú ako akcie v editore automatizácií a skriptov.
 
-### Choose a meal
+### Vybrať stravu
 
 ```yaml
 action: homeassistantedupage.choose_meal
@@ -407,9 +384,9 @@ data:
   number: 2
 ```
 
-Supported meal types are `snack`, `lunch`, and `afternoon_snack`. Menu numbers range from 1 to 8.
+Podporované interné typy jedla sú `snack`, `lunch` a `afternoon_snack`. Číslo menu je od 1 do 8.
 
-### Sign off a meal
+### Odhlásiť stravu
 
 ```yaml
 action: homeassistantedupage.sign_off_meal
@@ -418,7 +395,7 @@ data:
   meal_type: lunch
 ```
 
-### Rate a meal
+### Ohodnotiť stravu
 
 ```yaml
 action: homeassistantedupage.rate_meal
@@ -430,24 +407,24 @@ data:
   quality: 9
 ```
 
-Both ratings use a scale from 1 to 10. Rating is only possible when EduPage provides a rating object for that menu.
+Množstvo aj kvalita používajú stupnicu 1 až 10. Hodnotenie je možné iba vtedy, keď EduPage pre dané menu poskytne hodnotiaci objekt.
 
-### Send a message
+### Odoslať správu
 
 ```yaml
 action: homeassistantedupage.send_message
 data:
   recipients:
     - "12345"
-    - "Example Teacher"
-  body: "Please bring your homework tomorrow."
+    - "Príklad Učiteľa"
+  body: "Prosím, prineste si zajtra domácu úlohu."
 ```
 
-Recipients can be specified using a numeric EduPage person ID or an exact name, matched case-insensitively. Unknown recipients cause the service call to fail rather than sending the message to an unintended person.
+Príjemcu možno zadať číselným EduPage ID osoby alebo presným menom; porovnanie mena nerozlišuje veľké a malé písmená. Neznámy príjemca spôsobí chybu akcie, aby sa správa omylom neposlala inej osobe.
 
-### Selecting an account for a service
+### Výber účtu pri akcii
 
-When only one EduPage config entry is loaded, `entry_id` can be omitted. When several entries are loaded, every service call must specify the target config entry:
+Ak je načítaný iba jeden konfiguračný záznam EduPage, `entry_id` možno vynechať. Pri viacerých záznamoch musí akcia určiť cieľový záznam:
 
 ```yaml
 action: homeassistantedupage.choose_meal
@@ -458,80 +435,118 @@ data:
   number: 2
 ```
 
-An unknown `entry_id` is rejected. This prevents a meal or message action from accidentally being executed for another account.
+Neznáme `entry_id` je odmietnuté, aby sa jedlo alebo správa omylom nespracovali pod iným účtom.
 
-## Update interval
+## Interval aktualizácie
 
-EduPage data is fetched from the cloud approximately every 30 minutes. Timetable and canteen data are requested for the next 14 days. Changes are therefore not necessarily visible immediately.
+Údaje EduPage sa z cloudu načítavajú približne každých 30 minút. Rozvrh a jedálny lístok sa žiadajú približne na nasledujúcich 14 dní. Zmeny preto nemusia byť v Home Assistante viditeľné okamžite.
 
-## Troubleshooting
+EduPage nie je lokálne push API, preto nie je vhodné bez overenia znižovať interval na agresívne hodnoty.
 
-### No entities appear
+## Diagnostika
 
-- Restart Home Assistant after installing or updating the integration.
-- Check **Settings → System → Logs** for messages containing `homeassistantedupage`.
-- Confirm that the username, password, and school subdomain are correct.
-- Verify that the selected account can access student data in EduPage.
+Home Assistant umožňuje pre konfiguračný záznam stiahnuť diagnostiku. Tento fork pridáva diagnostický výstup zameraný na zisťovanie dostupných schopností účtu bez ďalšieho volania EduPage.
 
-### Two-factor authentication fails
+Diagnostika používa už načítané údaje koordinátora a sumarizuje napríklad:
 
-- Use the current app code shown by EduPage.
-- Ensure that Home Assistant can reach the school's EduPage instance.
-- Start the configuration again if the challenge has expired.
+- dostupné sekcie údajov,
+- počet predmetov a známok,
+- počty a typy upozornení,
+- počet dní a hodín rozvrhu,
+- dostupnosť údajov jedálne,
+- zmeny rozvrhu a chýbajúcich učiteľov,
+- dostupnosť najbližšieho zvonenia.
 
-### Home Assistant requests reauthentication
+Citlivé identifikačné údaje, napríklad používateľské meno, `PHPSESSID`, subdoména a údaje žiaka, sa redigujú. Napriek tomu diagnostiku pred zverejnením vždy skontrolujte, pretože ide o údaje zo školského účtu.
 
-The stored EduPage session has expired or become invalid. Enter the password again and complete two-factor authentication if requested. The new password is used to obtain a session and is not stored in the config entry.
+## Riešenie problémov
 
-### Only the next calendar event is visible
+### Nezobrazili sa žiadne entity
 
-This is normal Home Assistant calendar behavior. Open the Calendar panel, use a calendar card, or call `calendar.get_events` to retrieve all events for a period.
+- Po inštalácii alebo aktualizácii integrácie reštartujte Home Assistant.
+- Skontrolujte **Nastavenia → Systém → Protokoly** a záznamy obsahujúce `homeassistantedupage`.
+- Overte používateľské meno, heslo a subdoménu školy.
+- Overte, že rovnaký účet vo webovom EduPage vidí údaje vybraného žiaka.
 
-### A subject sensor has no grade attributes
+### Nefunguje dvojstupňové overenie
 
-The school may expose the subject without publishing grades for it. The sensor will report that no grades are available yet.
+- Použite aktuálny kód zobrazený aplikáciou EduPage.
+- Overte, že Home Assistant má prístup na internet a vie komunikovať s EduPage školy.
+- Ak výzva vypršala, začnite nastavenie znova.
 
-### A canteen or substitution entity is empty
+### Home Assistant žiada opätovné prihlásenie
 
-The school may not use that EduPage feature, the account may not have permission to access it, or no relevant data may currently be available.
+Uložená relácia EduPage vypršala alebo prestala byť platná. Zadajte heslo znova a podľa potreby dokončite 2FA. Heslo sa použije na získanie novej relácie a pri novších konfiguračných záznamoch sa trvalo neukladá.
 
-## Privacy and security
+### V kalendári vidím iba najbližšiu udalosť
 
-- Protect the Home Assistant configuration directory and its backups.
-- Treat the stored PHP session ID like a password.
-- Do not publish usernames, passwords, session IDs, student names, grades, timetable details, or message contents.
-- Sanitize debug logs before attaching them to a public issue. Debug logs may contain personal school data.
+Je to bežné správanie kalendárovej entity Home Assistanta. Všetky udalosti zobrazíte v paneli Kalendár, na kalendárovej karte alebo pomocou `calendar.get_events`.
 
-Version 0.4.0 and later do not persist the password for newly configured or reauthenticated entries. Entries created by older releases may still contain a previously stored password until they are reauthenticated or recreated.
+### Predmet nemá atribúty známok
 
-## Reporting a problem
+Škola môže predmet sprístupniť bez toho, aby pod daným účtom poskytovala známky. Senzor v takom prípade nemá čo zobraziť.
 
-Before opening an issue:
+### Jedáleň, suplovanie alebo zvonenie sú prázdne
 
-1. Update the integration to the latest release.
-2. Restart Home Assistant.
-3. Check the Home Assistant logs.
-4. Search the [existing issues](https://github.com/rine77/homeassistantedupage/issues).
+Škola nemusí danú funkciu používať, účet k nej nemusí mať oprávnenie alebo momentálne nemusia existovať relevantné údaje.
 
-When creating an issue, include:
+## Súkromie a bezpečnosť
 
-- the integration version;
-- the Home Assistant version;
-- a concise description of the expected and actual behavior;
-- relevant, sanitized log messages;
-- whether the account uses two-factor authentication;
-- which EduPage features are enabled by the school.
+- Chráňte konfiguračný priečinok Home Assistanta aj jeho zálohy.
+- S identifikátorom PHP relácie zaobchádzajte ako s heslom.
+- Nezverejňujte používateľské mená, heslá, session ID, mená žiakov, známky, obsah rozvrhu ani súkromné správy.
+- Pred priložením protokolu k verejnému issue odstráňte osobné údaje; debug log môže obsahovať školské dáta.
 
-Never post credentials, PHP session IDs, or personally identifiable school data.
+Verzia 0.4.0 a novšia pri novom nastavení alebo opätovnom prihlásení heslo trvalo neukladá. Záznamy vytvorené staršími verziami však môžu historicky uložené heslo obsahovať dovtedy, kým sa znova neprihlásia alebo nevytvoria nanovo.
 
-## Contributing
+## Aktualizácie cez HACS
 
-Bug reports, documentation improvements, translations, and pull requests are welcome. Please keep pull requests focused on one topic and include tests for behavior changes where possible.
+Ak repozitár nepoužíva GitHub Releases, HACS sleduje predvolenú vetvu repozitára. Po zmene v `main` preto môže ponúknuť aktualizáciu podľa nového commitu. Po aktualizácii Python kódu integrácie reštartujte Home Assistant.
 
-## Credits
+Pri vývoji tohto forku sa používa postup:
 
-Thanks to everyone who has contributed code, testing, translations, reports, and feedback, and to the maintainers of [edupage-api](https://github.com/EdupageAPI/edupage-api).
+`feature vetva → pull request → testy → merge do main → aktualizácia v HACS → reštart Home Assistanta`
 
-## License
+## Hlásenie problému
 
-See the repository's [license file](LICENSE) for details.
+Pred vytvorením issue:
+
+1. aktualizujte integráciu na najnovšiu dostupnú verziu,
+2. reštartujte Home Assistant,
+3. skontrolujte protokoly Home Assistanta,
+4. podľa potreby vytvorte diagnostiku,
+5. overte, či rovnaké údaje vidíte aj priamo v EduPage.
+
+Do hlásenia uveďte:
+
+- verziu integrácie,
+- verziu Home Assistanta,
+- stručný opis očakávaného a skutočného správania,
+- relevantnú anonymizovanú časť protokolu,
+- informáciu, či účet používa 2FA,
+- ktorých funkcií EduPage sa problém týka.
+
+Nikdy neposielajte prihlasovacie údaje, `PHPSESSID` ani osobné údaje zo školského účtu.
+
+Issues pre tento fork: <https://github.com/denkz0ne/haos_edupage/issues>
+
+## Vývoj a prispievanie
+
+Vývojová vetva pre konkrétnu funkciu má zostať tematicky úzka a zmeny sa majú dostať do `main` cez pull request po úspešnom behu testov. Všeobecne použiteľné opravy a preklady je vhodné ponúknuť aj pôvodnému projektu.
+
+Podrobnosti k lokálnemu vývojovému prostrediu sú v [`SETUP_DEVENV.md`](SETUP_DEVENV.md).
+
+### Pôvodný projekt
+
+- upstream: [`rine77/homeassistantedupage`](https://github.com/rine77/homeassistantedupage)
+- knižnica: [`EdupageAPI/edupage-api`](https://github.com/EdupageAPI/edupage-api)
+
+Integrácia používa neoficiálne rozhranie EduPage. Zmena na strane EduPage preto môže niektoré funkcie bez upozornenia dočasne rozbiť.
+
+## Poďakovanie
+
+Vďaka autorom a prispievateľom pôvodnej integrácie, ľuďom, ktorí poskytli testovanie, preklady, hlásenia a spätnú väzbu, a správcom projektu `edupage-api`.
+
+## Licencia
+
+Projekt je distribuovaný pod licenciou GNU General Public License v3.0. Podrobnosti sú v súbore [`LICENSE`](LICENSE). Autorské práva pôvodného projektu a jeho prispievateľov zostávajú zachované.

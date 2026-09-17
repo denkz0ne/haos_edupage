@@ -17,8 +17,15 @@ from edupage_api.lunches import Meal
 
 _LOGGER = logging.getLogger("custom_components.homeassistant_edupage")
 
+_MEAL_TYPE_LABELS = {
+    "SNACK": "Desiata",
+    "LUNCH": "Obed",
+    "AFTERNOON_SNACK": "Olovrant",
+}
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
-    """Set up Edupage calendar entities."""
+    """Set up EduPage calendar entities."""
     _LOGGER.debug("CALENDAR called async_setup_entry")
 
     coordinator = hass.data[DOMAIN][entry.entry_id]
@@ -42,18 +49,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
 
 class EdupageCalendar(CoordinatorEntity, CalendarEntity):
-    """Representation of an Edupage calendar entity."""
+    """Representation of an EduPage timetable calendar entity."""
 
     def __init__(self, coordinator, data):
         super().__init__(coordinator)
         self._data = data
         self._events = []
-        self._attr_name = "Edupage Calendar"
         student = coordinator.data.get("student", {}) if coordinator.data else {}
         self._student_id = student.get("id", data.get(CONF_STUDENT_ID, "unknown"))
         self._student_name = student.get("name") or data.get(
-            CONF_STUDENT_NAME, "Unknown Student"
+            CONF_STUDENT_NAME, "Neznámy žiak"
         )
+        self._attr_name = f"EduPage - Rozvrh {self._student_name}"
         self._attr_device_info = student_device_info(
             self._student_id, self._student_name
         )
@@ -66,7 +73,7 @@ class EdupageCalendar(CoordinatorEntity, CalendarEntity):
     @property
     def name(self):
         """Return the name of the calendar."""
-        return f"Edupage - {self._student_name}"
+        return f"EduPage - Rozvrh {self._student_name}"
 
     @property
     def available(self) -> bool:
@@ -109,17 +116,17 @@ class EdupageCalendar(CoordinatorEntity, CalendarEntity):
 
     def map_lesson_to_calender_event(self, lesson: Lesson, day: date) -> CalendarEvent:
         teacher_names = [teacher.name for teacher in lesson.teachers] if lesson.teachers else []
-        teachers = ", ".join(teacher_names) if teacher_names else "Unknown Teacher"
-        description = f"Teacher(s): {teachers}"
+        teachers = ", ".join(teacher_names) if teacher_names else "Neznámy učiteľ"
+        description = f"Vyučujúci: {teachers}"
         room = None
         if lesson.classrooms:
             room = lesson.classrooms[0].name
-            description += f"\nRoom: {room}"
+            description += f"\nUčebňa: {room}"
         local_tz = ZoneInfo(self.hass.config.time_zone)
         start_time = datetime.combine(day, lesson.start_time).astimezone(local_tz)
         end_time = datetime.combine(day, lesson.end_time).astimezone(local_tz)
-        lesson_subject = lesson.subject.name if lesson.subject else "Unknown Subject"
-        lesson_subject_prefix = "[Canceled] " if lesson.is_cancelled else ""
+        lesson_subject = lesson.subject.name if lesson.subject else "Neznámy predmet"
+        lesson_subject_prefix = "[Odpadlo] " if lesson.is_cancelled else ""
 
         cal_event = CalendarEvent(
             start=start_time,
@@ -183,18 +190,18 @@ class EdupageCalendar(CoordinatorEntity, CalendarEntity):
 
 
 class EdupageCanteenCalendar(CoordinatorEntity, CalendarEntity):
-    """Representation of an Edupage canteen calendar entity."""
+    """Representation of an EduPage canteen calendar entity."""
 
     def __init__(self, coordinator, data):
         super().__init__(coordinator)
         self._data = data
         self._events = []
-        self._attr_name = "Edupage Canteen Calendar"
         student = coordinator.data.get("student", {}) if coordinator.data else {}
         self._student_id = student.get("id", data.get(CONF_STUDENT_ID, "unknown"))
         self._student_name = student.get("name") or data.get(
-            CONF_STUDENT_NAME, "Unknown Student"
+            CONF_STUDENT_NAME, "Neznámy žiak"
         )
+        self._attr_name = f"EduPage - Jedálny lístok {self._student_name}"
         self._attr_device_info = student_device_info(
             self._student_id, self._student_name
         )
@@ -207,7 +214,7 @@ class EdupageCanteenCalendar(CoordinatorEntity, CalendarEntity):
     @property
     def name(self):
         """Return the name of the calendar."""
-        return f"Edupage Canteen - {self._student_name}"
+        return f"EduPage - Jedálny lístok {self._student_name}"
 
     @property
     def available(self) -> bool:
@@ -256,7 +263,10 @@ class EdupageCanteenCalendar(CoordinatorEntity, CalendarEntity):
             if end_time <= start_time:
                 end_time = end_time + timedelta(days=1)
 
-        summary = meal.meal_type.name.replace("_", " ").capitalize()
+        summary = _MEAL_TYPE_LABELS.get(
+            meal.meal_type.name,
+            meal.meal_type.name.replace("_", " ").capitalize(),
+        )
         description = meal.title
 
         return CalendarEvent(
@@ -354,10 +364,10 @@ class EduPageAssignmentsCalendar(CoordinatorEntity, CalendarEntity):
         student = coordinator.data.get("student", {}) if coordinator.data else {}
         self._student_id = student.get("id", data.get(CONF_STUDENT_ID, "unknown"))
         self._student_name = student.get("name") or data.get(
-            CONF_STUDENT_NAME, "Unknown Student"
+            CONF_STUDENT_NAME, "Neznámy žiak"
         )
         self._student_class_names = student.get("class_names", [])
-        self._attr_name = f"EduPage - Assignments {self._student_name}"
+        self._attr_name = f"EduPage - DÚ a písomky {self._student_name}"
         self._attr_unique_id = f"edupage_assignments_{self._student_id}"
         self._attr_device_info = student_device_info(
             self._student_id, self._student_name
@@ -396,27 +406,27 @@ class EduPageAssignmentsCalendar(CoordinatorEntity, CalendarEntity):
             return None
 
         subject = self._subject_name(additional_data.get("predmetid"))
-        text = str(getattr(notification, "text", None) or "Assignment")
+        text = str(getattr(notification, "text", None) or "Úloha")
         author = getattr(notification, "author", None)
         author_name = getattr(author, "name", None) or author
 
-        kind = "Homework" if raw_type == _HOMEWORK_TYPE else "Exam"
+        kind = "DÚ" if raw_type == _HOMEWORK_TYPE else "Písomka/skúšanie"
         completed = raw_type == _HOMEWORK_TYPE and bool(
             getattr(notification, "is_done", False)
         )
         summary_parts = []
         if completed:
-            summary_parts.append("[Completed]")
+            summary_parts.append("[Splnené]")
         summary_parts.append(f"[{kind}]")
         if subject:
             summary_parts.append(f"{subject}:")
         summary_parts.append(text)
 
-        description_parts = [f"Type: {kind}"]
+        description_parts = [f"Typ: {kind}"]
         if subject:
-            description_parts.append(f"Subject: {subject}")
+            description_parts.append(f"Predmet: {subject}")
         if author_name:
-            description_parts.append(f"Author: {author_name}")
+            description_parts.append(f"Zadal: {author_name}")
 
         return CalendarEvent(
             start=event_date,
