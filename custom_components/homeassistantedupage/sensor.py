@@ -20,7 +20,7 @@ from .const import (
 )
 from .calendar import _EXAM_TYPES, _parse_notification_date
 from .event import _event_type_value
-from .entity_helpers import student_device_info
+from .entity_helpers import compact_entity_name, student_device_info
 
 _LOGGER = logging.getLogger("custom_components.homeassistant_edupage")
 
@@ -293,7 +293,7 @@ class EduPageOpenHomeworkSensor(EduPageAssignmentSensor):
 
     def __init__(self, coordinator, student_id, student_name) -> None:
         super().__init__(coordinator, student_id, student_name)
-        self._attr_name = f"EduPage - Nesplnené domáce úlohy {self._student_name}"
+        self._attr_name = compact_entity_name(self._student_name, "Nesplnené DÚ")
         self._attr_unique_id = f"edupage_open_homework_{student_id}"
         self._attr_icon = "mdi:clipboard-text-outline"
 
@@ -316,7 +316,7 @@ class EduPageOverdueHomeworkSensor(EduPageOpenHomeworkSensor):
 
     def __init__(self, coordinator, student_id, student_name) -> None:
         super().__init__(coordinator, student_id, student_name)
-        self._attr_name = f"EduPage - Domáce úlohy po termíne {self._student_name}"
+        self._attr_name = compact_entity_name(self._student_name, "DÚ po termíne")
         self._attr_unique_id = f"edupage_overdue_homework_{student_id}"
         self._attr_icon = "mdi:clipboard-alert-outline"
 
@@ -339,9 +339,7 @@ class EduPageNextHomeworkDeadlineSensor(EduPageAssignmentSensor):
 
     def __init__(self, coordinator, student_id, student_name) -> None:
         super().__init__(coordinator, student_id, student_name)
-        self._attr_name = (
-            f"EduPage - Najbližší termín domácej úlohy {self._student_name}"
-        )
+        self._attr_name = compact_entity_name(self._student_name, "Termín DÚ")
         self._attr_unique_id = f"edupage_next_homework_deadline_{student_id}"
         self._next_homework = None
 
@@ -410,9 +408,7 @@ class EduPageUpcomingExamsSensor(EduPageOpenHomeworkSensor):
 
     def __init__(self, coordinator, student_id, student_name) -> None:
         super().__init__(coordinator, student_id, student_name)
-        self._attr_name = (
-            f"EduPage - Nadchádzajúce písomky a skúšanie {self._student_name}"
-        )
+        self._attr_name = compact_entity_name(self._student_name, "Písomky/skúšanie")
         self._attr_unique_id = f"edupage_upcoming_exams_{student_id}"
         self._attr_icon = "mdi:calendar-alert"
 
@@ -442,7 +438,7 @@ class EduPageSubjectSensor(StateRestoringSensor):
         self._grades = grades or []
         self._attr_device_info = student_device_info(student_id, student_name)
 
-        self._attr_name = f"EduPage - {student_name} - {subject_name}"
+        self._attr_name = compact_entity_name(student_name, subject_name)
         self._name = self._attr_name
 
         self._unique_id = f"edupage_subject_{self._student_id}_{self._student_name}_{self._subject_name}"
@@ -552,7 +548,7 @@ class EduPageNotificationSensor(StateRestoringSensor):
         self._student_name = unidecode(student_name).replace(" ", "_").lower()
         self._attr_device_info = student_device_info(student_id, student_name)
 
-        self._attr_name = f"EduPage - Upozornenia {student_name}"
+        self._attr_name = compact_entity_name(student_name, "Upozornenia")
         self._name = self._attr_name
 
         self._unique_id = f"edupage_notification_{self._student_id}_{self._student_name}"
@@ -716,12 +712,12 @@ class EduPageSubstitutionSensor(StateRestoringSensor):
         self._data_key = data_key
         self._attr_device_info = student_device_info(student_id, student_name)
         label = (
-            "Zmeny rozvrhu a suplovanie"
+            "Suplovanie"
             if data_key == "timetable_changes"
             else "Chýbajúci učitelia"
         )
 
-        self._attr_name = f"EduPage - {label} {student_name}"
+        self._attr_name = compact_entity_name(student_name, label)
         self._unique_id = f"edupage_{data_key}_{self._student_id}_{self._student_name}"
 
     @property
@@ -771,7 +767,7 @@ class EduPageRingingSensor(StateRestoringSensor):
         self._student_id = student_id
         self._student_name = _subject_slug(student_name)
         self._attr_device_info = student_device_info(student_id, student_name)
-        self._attr_name = f"EduPage - Najbližšie zvonenie {student_name}"
+        self._attr_name = compact_entity_name(student_name, "Zvonenie")
         self._unique_id = (
             f"edupage_next_ringing_{self._student_id}_{self._student_name}"
         )
@@ -818,7 +814,7 @@ class EduPageTermAverageSensor(StateRestoringSensor):
         self._attr_device_info = student_device_info(student_id, student_name)
         term_label = "1. polrok" if term_key == "first" else "2. polrok"
 
-        self._attr_name = f"EduPage - Priemer za {term_label} {student_name}"
+        self._attr_name = compact_entity_name(student_name, f"Priemer {term_label}")
         self._unique_id = (
             f"edupage_term_{term_key}_{self._student_id}_{self._student_name}"
         )

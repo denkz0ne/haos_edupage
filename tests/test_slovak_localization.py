@@ -38,14 +38,14 @@ def test_user_visible_entity_text_is_slovak() -> None:
 
     expected = {
         sensor: [
-            "Nesplnené domáce úlohy",
-            "Domáce úlohy po termíne",
-            "Najbližší termín domácej úlohy",
-            "Nadchádzajúce písomky a skúšanie",
+            "Nesplnené DÚ",
+            "DÚ po termíne",
+            "Termín DÚ",
+            "Písomky/skúšanie",
             "Chýbajúci učitelia",
-            "Najbližšie zvonenie",
+            "Zvonenie",
             'term_label = "1. polrok" if term_key == "first" else "2. polrok"',
-            'f"EduPage - Priemer za {term_label} {student_name}"',
+            'f"Priemer {term_label}"',
         ],
         calendar: [
             "Rozvrh",
@@ -56,7 +56,7 @@ def test_user_visible_entity_text_is_slovak() -> None:
             "DÚ a písomky",
             "Písomka/skúšanie",
         ],
-        todo: ["Domáce úlohy", "Predmet:", "Zadal:"],
+        todo: ["DÚ", "Predmet:", "Zadal:"],
         event: ["Udalosti"],
     }
 
