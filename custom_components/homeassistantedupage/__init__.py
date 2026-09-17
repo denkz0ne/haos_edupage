@@ -15,6 +15,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .homeassistant_edupage import Edupage, EdupageSessionExpired
 from .entity_helpers import student_device_info
+from .polling import EduPageDataManager, FAST_REFRESH_INTERVAL
 from edupage_api.lunches import MealType
 from edupage_api.grades import Term
 from .const import (
@@ -27,24 +28,28 @@ from .const import (
 
 _LOGGER = logging.getLogger("custom_components.homeassistant_edupage")
 
+
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the integration (config-entry only)."""
     _LOGGER.debug("INIT called async_setup")
     return True
 
 
-async def _collect_data(edupage, student, student_name):
-    """Gather all EduPage data sections for a student.
+async def _collect_data(
+    edupage,
+    student,
+    student_name,
+    *,
+    fetch_notifications: bool = True,
+):
+    """Gather the slower EduPage data sections for a student.
 
     Each optional data source is fetched independently. A failure in one
     source (e.g. a ``get_grades()`` crash) must not discard the rest of the
-    data; the failed section falls back to an empty list so timetable,
-    calendar, meals and substitution data are still returned.
-
-    Per-section freshness is recorded in the returned ``data_ok`` mapping so
-    sensors can tell whether their own source data was actually refreshed this
-    poll (rather than inferring it from ``coordinator.last_update_success``,
-    which stays ``True`` when only one section fails).
+    data; the failed section falls back to an empty value and records its own
+    freshness flag. ``fetch_notifications`` remains ``True`` for backwards
+    compatibility with direct callers/tests, while the runtime fast/slow
+    manager sets it to ``False`` because timeline data is fetched separately.
     """
     data_ok = {}
     student_data = {"id": student.person_id, "name": student_name}
@@ -90,13 +95,15 @@ async def _collect_data(edupage, student, student_name):
         subjects = []
         data_ok["subjects"] = False
 
-    try:
-        notifications = await edupage.get_notifications()
-        data_ok["notifications"] = True
-    except Exception as e:  # noqa: BLE001
-        _LOGGER.warning("get_notifications failed: %s", e)
-        notifications = []
-        data_ok["notifications"] = False
+    notifications = None
+    if fetch_notifications:
+        try:
+            notifications = await edupage.get_notifications()
+            data_ok["notifications"] = True
+        except Exception as e:  # noqa: BLE001
+            _LOGGER.warning("get_notifications failed: %s", e)
+            notifications = []
+            data_ok["notifications"] = False
 
     today = datetime.now().date()
 
@@ -106,9 +113,7 @@ async def _collect_data(edupage, student, student_name):
     for offset in range(14):
         current_date = today + timedelta(days=offset)
         try:
-            timetable = await edupage.get_timetable(
-                student, current_date
-            )
+            timetable = await edupage.get_timetable(student, current_date)
         except Exception as e:  # noqa: BLE001
             _LOGGER.error(
                 "Failed to fetch timetable data for %s: %s",
@@ -159,9 +164,7 @@ async def _collect_data(edupage, student, student_name):
         timetable_changes = await edupage.get_timetable_changes(today)
         data_ok["timetable_changes"] = True
     except Exception as e:  # noqa: BLE001
-        _LOGGER.warning(
-            "get_timetable_changes failed for %s: %s", today, e
-        )
+        _LOGGER.warning("get_timetable_changes failed for %s: %s", today, e)
         timetable_changes = []
         data_ok["timetable_changes"] = False
 
@@ -169,16 +172,12 @@ async def _collect_data(edupage, student, student_name):
         missing_teachers = await edupage.get_missing_teachers(today)
         data_ok["missing_teachers"] = True
     except Exception as e:  # noqa: BLE001
-        _LOGGER.warning(
-            "get_missing_teachers failed for %s: %s", today, e
-        )
+        _LOGGER.warning("get_missing_teachers failed for %s: %s", today, e)
         missing_teachers = []
         data_ok["missing_teachers"] = False
 
     try:
-        next_ringing = await edupage.get_next_ringing_time(
-            datetime.now()
-        )
+        next_ringing = await edupage.get_next_ringing_time(datetime.now())
         data_ok["next_ringing"] = True
     except Exception as e:  # noqa: BLE001
         _LOGGER.warning("get_next_ringing_time failed: %s", e)
@@ -196,9 +195,7 @@ async def _collect_data(edupage, student, student_name):
         all_terms_ok = school_year is not None
         for term_key, term_enum in term_map.items():
             try:
-                grades_per_term[
-                    term_key
-                ] = await edupage.get_grades_for_term(
+                grades_per_term[term_key] = await edupage.get_grades_for_term(
                     school_year, term_enum
                 )
             except Exception as e:  # noqa: BLE001
@@ -213,14 +210,13 @@ async def _collect_data(edupage, student, student_name):
         school_year = None
         data_ok["school_year"] = False
 
-    return {
+    result = {
         "student": student_data,
         "grades": grades,
         "subjects": subjects,
         "timetable": timetable_data,
         "canteen_menu": canteen_menu_data,
         "cancelled_lessons": timetable_data_canceled,
-        "notifications": notifications,
         "timetable_changes": timetable_changes,
         "missing_teachers": missing_teachers,
         "next_ringing": next_ringing,
@@ -229,10 +225,14 @@ async def _collect_data(edupage, student, student_name):
         "data_ok": data_ok,
         "last_updated": datetime.now().isoformat(),
     }
+    if fetch_notifications:
+        result["notifications"] = notifications
+    return result
+
 
 async def _async_update_listener(
-        hass: HomeAssistant,
-        entry: ConfigEntry,
+    hass: HomeAssistant,
+    entry: ConfigEntry,
 ) -> None:
     """Reload the config entry when its options change."""
     await hass.config_entries.async_reload(entry.entry_id)
@@ -258,13 +258,9 @@ def _async_group_config_entry_entities(
         **student_device_info(student_id, student_name),
     )
     entity_registry = er.async_get(hass)
-    for entity in er.async_entries_for_config_entry(
-        entity_registry, entry.entry_id
-    ):
+    for entity in er.async_entries_for_config_entry(entity_registry, entry.entry_id):
         if entity.device_id != device.id:
-            entity_registry.async_update_entity(
-                entity.entity_id, device_id=device.id
-            )
+            entity_registry.async_update_entity(entity.entity_id, device_id=device.id)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -295,9 +291,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return False
 
     fetch_lock = asyncio.Lock()
+    data_manager = EduPageDataManager(_collect_data)
 
     async def fetch_data():
-        """Fetch timetable, canteen and notification data for the student."""
+        """Fetch fast timeline data and TTL-cached slower EduPage sections."""
         _LOGGER.debug("INIT called fetch_data")
 
         async with fetch_lock:
@@ -316,9 +313,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     )
                     return {"timetable": {}}
 
-                student_name = student.name or stored_student_name or str(student.person_id)
-
-                return await _collect_data(edupage, student, student_name)
+                student_name = (
+                    student.name or stored_student_name or str(student.person_id)
+                )
+                return await data_manager.async_collect(
+                    edupage,
+                    student,
+                    student_name,
+                )
 
             except EdupageSessionExpired as e:
                 _LOGGER.error("INIT session expired during update: %s", e)
@@ -335,11 +337,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER,
         name="Edupage",
         update_method=fetch_data,
-        update_interval=timedelta(minutes=30),
+        update_interval=FAST_REFRESH_INTERVAL,
         config_entry=entry,
     )
     coordinator.edupage = edupage
     coordinator.fetch_lock = fetch_lock
+    coordinator.data_manager = data_manager
 
     try:
         hass.data[DOMAIN][entry.entry_id] = coordinator
@@ -369,6 +372,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     return True
+
 
 # ---------------------------------------------------------------------------
 # Services
