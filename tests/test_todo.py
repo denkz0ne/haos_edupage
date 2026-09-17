@@ -159,4 +159,4 @@ def test_entity_is_read_only_and_uses_student_device(coordinator):
     assert entity.supported_features == 0
     assert entity.device_info["identifiers"] == {(DOMAIN, "1")}
     assert entity.device_info["name"] == "EduPage - Max Example"
-    assert entity.name == "EduPage - Domáce úlohy Max Example"
+    assert entity.name == "[ME] DÚ"
