@@ -60,6 +60,8 @@ Koordinátor bude tickovať približne každé 2 minúty. Slow sekcie sa znovu s
 
 Pri prvom štarte config entry sa načítajú fast aj slow dáta.
 
+Ak fast timeline zachytí udalosť `substitution`, `h_substitution`, `timetable` alebo `h_timetable`, cache rozvrhu/suplovania sa označí ako neaktuálna a príslušné timetable sekcie sa obnovia bez čakania na 30-minútový TTL. Nástenka tak dostane zmenu rozvrhu typicky v rámci nasledujúceho fast cyklu.
+
 ## Filtrovanie udalostí podľa dieťaťa
 
 Všetky `pipnutie` a `strava_vydaj` udalosti musia prejsť existujúcou logikou `event_matches_student(...)`, aby dve deti v jednom rodičovskom účte nedostali rovnaký stav.
@@ -74,7 +76,7 @@ Timestamp najnovšieho `pipnutie` eventu patriaceho danému dieťaťu. Použiť 
 
 ### Príchod do školy dnes
 
-`on`, ak existuje `pipnutie` pre dané dieťa s lokálnym dátumom zhodným s dneškom Home Assistantu. O polnoci sa prirodzene zmení na `off`, aj keď nepríde nový EduPage update.
+`on`, ak existuje `pipnutie` pre dané dieťa s lokálnym dátumom zhodným s dneškom Home Assistantu. Po zmene dňa sa stav prepočíta pri najbližšom fast cykle, aj keď nepríde nový EduPage event.
 
 ### Posledný výdaj stravy
 
@@ -82,7 +84,7 @@ Timestamp najnovšieho `strava_vydaj` eventu patriaceho danému dieťaťu. Devic
 
 ### Obed vydaný dnes
 
-`on`, ak existuje dnešný `strava_vydaj` event daného dieťaťa. Neodvodzovať z objednaného menu; ide o reálny evidovaný výdaj.
+`on`, ak existuje dnešný `strava_vydaj` event daného dieťaťa. Neodvodzovať z objednaného menu; ide o reálny evidovaný výdaj. Po zmene dňa sa stav prepočíta pri najbližšom fast cykle.
 
 ### Škola dnes
 
@@ -165,7 +167,7 @@ Cieľom je pripraviť podklady pre ďalšiu verziu s reálnou dochádzkou (`abse
 - Fast timeline fetch failure nesmie zmazať posledné známe školské udalosti ani slow dáta.
 - Slow fetch failure jednej sekcie nesmie zmazať ostatné sekcie; zachovať existujúci `data_ok` model.
 - Timestamp senzory majú držať poslednú známu hodnotu cez existujúci restore-state vzor tam, kde to dáva význam.
-- Entity založené na dnešnom dátume musia korektne reagovať na zmenu dňa aj bez nového EduPage eventu.
+- Entity založené na dnešnom dátume musia korektne reagovať na zmenu dňa pri najbližšom fast cykle.
 - Pri timetable chybe jedného dieťaťa nesmie dôjsť k zlyhaniu timeline/meal/attendance kontextu druhého dieťaťa ani tej istej config entry.
 
 ## Testovanie
@@ -176,6 +178,7 @@ Pridať regresné testy pre:
 - prvý refresh načíta všetky sekcie,
 - ďalší 2-minútový refresh nevolá slow API pred TTL,
 - slow API sa po TTL obnoví,
+- timetable/substitution timeline event invaliduje slow cache a obnoví rozvrh skôr než po TTL,
 - `pipnutie` sa filtruje podľa dieťaťa,
 - `strava_vydaj` sa filtruje podľa dieťaťa,
 - dnešný príchod a dnešný obed,
