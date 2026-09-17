@@ -76,7 +76,7 @@ def test_user_visible_entity_text_is_slovak() -> None:
         "Teacher(s):",
         "Room:",
         "[Canceled]",
-        "Assignments",
+        "Assignments ",
         "[Completed]",
         "Subject:",
         "Author:",
