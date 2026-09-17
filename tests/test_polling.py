@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import pytest
 
+from custom_components.homeassistantedupage import _collect_data
 from custom_components.homeassistantedupage.polling import (
     EduPageDataManager,
     FAST_REFRESH_INTERVAL,
@@ -171,3 +173,31 @@ async def test_failed_slow_section_preserves_previous_successful_value(student):
     assert first["grades"] == ["grade-1"]
     assert second["grades"] == ["grade-1"]
     assert second["data_ok"]["grades"] is False
+
+
+@pytest.mark.asyncio
+async def test_collect_data_can_skip_notifications_for_slow_refresh(student):
+    """Slow refresh must not make a second timeline request."""
+    api = SimpleNamespace(
+        get_grades=AsyncMock(return_value=[]),
+        get_subjects=AsyncMock(return_value=[]),
+        get_notifications=AsyncMock(side_effect=AssertionError("must not be called")),
+        get_timetable=AsyncMock(return_value=[]),
+        get_meals=AsyncMock(return_value=None),
+        get_timetable_changes=AsyncMock(return_value=[]),
+        get_missing_teachers=AsyncMock(return_value=[]),
+        get_next_ringing_time=AsyncMock(return_value=None),
+        get_school_year=AsyncMock(return_value=None),
+        get_grades_for_term=AsyncMock(return_value=[]),
+    )
+
+    data = await _collect_data(
+        api,
+        student,
+        student.name,
+        fetch_notifications=False,
+    )
+
+    api.get_notifications.assert_not_called()
+    assert "notifications" not in data
+    assert "notifications" not in data["data_ok"]
