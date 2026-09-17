@@ -29,6 +29,7 @@ _LOGGER = logging.getLogger("custom_components.homeassistant_edupage")
 _MAX_EVENTS = 50
 _MAX_STATE_ATTRIBUTES_BYTES = 14 * 1024
 
+
 def _section_fresh(coordinator, key):
     """True when a specific data section was successfully refreshed.
 
@@ -61,9 +62,7 @@ class StateRestoringSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
     sensor's own data section, so automations can avoid acting on stale data.
     """
 
-    #: Key (in ``coordinator.data`` / ``data_ok``) identifying this sensor's data.
     _data_key = "grades"
-
     _last_value = None
 
     async def async_added_to_hass(self) -> None:
@@ -72,22 +71,12 @@ class StateRestoringSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         self._apply_restored(await self.async_get_last_state())
 
     def _apply_restored(self, last_state):
-        """Apply a recorder-restored state as the initial last-known value.
-
-        Non-restorable restored states (``unknown``/``unavailable``/``none``)
-        are ignored, leaving ``_last_value`` as ``None`` so the sensor stays
-        unavailable rather than showing an unbacked value.
-        """
+        """Apply a recorder-restored state as the initial last-known value."""
         if last_state is not None:
             self._last_value = self._coerce_restored(last_state.state)
 
     def _coerce_restored(self, raw_state):
-        """Convert a recorder-restored string state back to the native type.
-
-        Returns ``None`` for non-restorable states so the entity does not
-        surface ``unknown``/``unavailable`` (or an invented ``0``) as a real
-        last-known value.
-        """
+        """Convert a recorder-restored string state back to the native type."""
         if raw_state is None or not raw_state or raw_state in (
             "unknown",
             "unavailable",
@@ -108,13 +97,7 @@ class StateRestoringSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
 
     @property
     def available(self):
-        """Follow this sensor's own freshness, not just the whole coordinator.
-
-        A sensor stays available when its own data section refreshed, or while
-        it can still show a last-known value. When its section failed and there
-        is no restored/last-known value to fall back on, it must be unavailable
-        even if the overall coordinator update succeeded.
-        """
+        """Follow this sensor's own freshness, not just the whole coordinator."""
         return self._data_is_fresh() or self._last_value is not None
 
     @property
@@ -139,11 +122,6 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][entry.entry_id]
 
     student = coordinator.data.get("student", {})
-
-    # Fall back to the stored student from the config entry when the first
-    # coordinator refresh has not produced student data (e.g. EduPage was
-    # unavailable at HA startup). Without this, construction would pass a
-    # None name into unidecode() and abort before RestoreEntity is attached.
     student_id = student.get("id") if student else entry.data.get(CONF_STUDENT_ID)
     student_name = (
         student.get("name")
@@ -154,9 +132,6 @@ async def async_setup_entry(
     subjects = coordinator.data.get("subjects", [])
     selected_subject_ids = entry.options.get(CONF_SUBJECT_IDS)
 
-    # Entries without this option predate subject selection and retain the
-    # previous behavior. An explicitly stored empty list disables all
-    # individual subject sensors.
     if selected_subject_ids is not None:
         selected_subject_ids = {
             str(subject_id) for subject_id in selected_subject_ids
@@ -317,14 +292,12 @@ class EduPageOpenHomeworkSensor(EduPageAssignmentSensor):
     """Count incomplete homework notifications."""
 
     def __init__(self, coordinator, student_id, student_name) -> None:
-        """Initialize the open-homework sensor."""
         super().__init__(coordinator, student_id, student_name)
-        self._attr_name = f"EduPage - Open homework {self._student_name}"
+        self._attr_name = f"EduPage - Nesplnené domáce úlohy {self._student_name}"
         self._attr_unique_id = f"edupage_open_homework_{student_id}"
         self._attr_icon = "mdi:clipboard-text-outline"
 
     def _coerce_restored(self, raw_state):
-        """Restore the homework count as an integer."""
         try:
             return int(float(raw_state))
         except (TypeError, ValueError):
@@ -332,7 +305,6 @@ class EduPageOpenHomeworkSensor(EduPageAssignmentSensor):
 
     @property
     def state(self):
-        """Return the number of incomplete homework items."""
         count = sum(
             not bool(getattr(item, "is_done", False)) for item in self._homework()
         )
@@ -343,15 +315,13 @@ class EduPageOverdueHomeworkSensor(EduPageOpenHomeworkSensor):
     """Count incomplete homework whose deadline has passed."""
 
     def __init__(self, coordinator, student_id, student_name) -> None:
-        """Initialize the overdue-homework sensor."""
         super().__init__(coordinator, student_id, student_name)
-        self._attr_name = f"EduPage - Overdue homework {self._student_name}"
+        self._attr_name = f"EduPage - Domáce úlohy po termíne {self._student_name}"
         self._attr_unique_id = f"edupage_overdue_homework_{student_id}"
         self._attr_icon = "mdi:clipboard-alert-outline"
 
     @property
     def state(self):
-        """Return the number of incomplete overdue homework items."""
         today = self._today()
         count = sum(
             not bool(getattr(item, "is_done", False))
@@ -368,21 +338,20 @@ class EduPageNextHomeworkDeadlineSensor(EduPageAssignmentSensor):
     _attr_device_class = SensorDeviceClass.DATE
 
     def __init__(self, coordinator, student_id, student_name) -> None:
-        """Initialize the next-deadline sensor."""
         super().__init__(coordinator, student_id, student_name)
-        self._attr_name = f"EduPage - Next homework deadline {self._student_name}"
+        self._attr_name = (
+            f"EduPage - Najbližší termín domácej úlohy {self._student_name}"
+        )
         self._attr_unique_id = f"edupage_next_homework_deadline_{student_id}"
         self._next_homework = None
 
     def _coerce_restored(self, raw_state):
-        """Restore an ISO date from the recorder."""
         try:
             return date.fromisoformat(raw_state)
         except (TypeError, ValueError):
             return None
 
     def _next_item(self):
-        """Return the nearest incomplete homework due today or later."""
         today = self._today()
         candidates = [
             (due, item)
@@ -399,7 +368,6 @@ class EduPageNextHomeworkDeadlineSensor(EduPageAssignmentSensor):
 
     @property
     def state(self):
-        """Return the next incomplete homework deadline."""
         if self._data_is_fresh():
             next_item = self._next_item()
             self._next_homework = next_item[1] if next_item else None
@@ -409,7 +377,6 @@ class EduPageNextHomeworkDeadlineSensor(EduPageAssignmentSensor):
 
     @property
     def extra_state_attributes(self):
-        """Expose details of the homework behind the next deadline."""
         attributes = super().extra_state_attributes
         if self._next_homework is None:
             return attributes
@@ -442,15 +409,15 @@ class EduPageUpcomingExamsSensor(EduPageOpenHomeworkSensor):
     """Count dated exams scheduled for today or later."""
 
     def __init__(self, coordinator, student_id, student_name) -> None:
-        """Initialize the upcoming-exams sensor."""
         super().__init__(coordinator, student_id, student_name)
-        self._attr_name = f"EduPage - Upcoming exams {self._student_name}"
+        self._attr_name = (
+            f"EduPage - Nadchádzajúce písomky a skúšanie {self._student_name}"
+        )
         self._attr_unique_id = f"edupage_upcoming_exams_{student_id}"
         self._attr_icon = "mdi:calendar-alert"
 
     @property
     def state(self):
-        """Return the number of exams scheduled for today or later."""
         today = self._today()
         count = sum(exam_date >= today for exam_date, _ in self._dated_exams())
         return self._state_with_fallback(count)
@@ -460,14 +427,12 @@ class EduPageSubjectSensor(StateRestoringSensor):
     """Subject sensor entity for a specific student."""
 
     def _coerce_restored(self, raw_state):
-        """Restore the grade count as an int when possible."""
         try:
             return int(float(raw_state))
         except (TypeError, ValueError):
             return None
 
     def __init__(self, coordinator, student_id, student_name, subject_name, subject_id, grades=None):
-        """Initialize the sensor."""
         super().__init__(coordinator)
 
         self._student_id = student_id
@@ -477,19 +442,17 @@ class EduPageSubjectSensor(StateRestoringSensor):
         self._grades = grades or []
         self._attr_device_info = student_device_info(student_id, student_name)
 
-        self._attr_name = f"Edupage - {student_name} - {subject_name}"
+        self._attr_name = f"EduPage - {student_name} - {subject_name}"
         self._name = self._attr_name
 
         self._unique_id = f"edupage_subject_{self._student_id}_{self._student_name}_{self._subject_name}"
 
     @property
     def unique_id(self):
-        """Return a unique identifier for this sensor."""
         return self._unique_id
 
     @property
     def _current_grades(self):
-        """Return live grades for this subject from the coordinator."""
         all_grades = self.coordinator.data.get("grades", [])
         if self._subject_id is None:
             return self._grades
@@ -499,7 +462,6 @@ class EduPageSubjectSensor(StateRestoringSensor):
 
     @property
     def state(self):
-        """Return the grade count, falling back to the last-known value."""
         if self._data_is_fresh():
             return self._set_value(len(self._current_grades))
         if self._last_value is not None:
@@ -508,10 +470,9 @@ class EduPageSubjectSensor(StateRestoringSensor):
 
     @property
     def extra_state_attributes(self):
-        """Return additional attributes."""
         current_grades = self._current_grades
         if not current_grades:
-            attributes = {"info": "no grades yet"}
+            attributes = {"info": "zatiaľ bez známok"}
         else:
             attributes = {
                 "student": self.coordinator.data.get("student", {}),
@@ -531,7 +492,7 @@ class EduPageSubjectSensor(StateRestoringSensor):
                     attributes[f"grade_{i+1}_comment"] = grade.comment
                 attributes[f"grade_{i+1}_date"] = grade.date.strftime("%Y-%m-%d %H:%M:%S")
 
-                teacher_name = grade.teacher.name if grade.teacher else "unknown"
+                teacher_name = grade.teacher.name if grade.teacher else "neznámy"
                 attributes[f"grade_{i+1}_teacher"] = teacher_name
 
             latest_grade = max(
@@ -577,14 +538,12 @@ class EduPageNotificationSensor(StateRestoringSensor):
     """Notification sensor for a specific student (counts all event types)."""
 
     def _coerce_restored(self, raw_state):
-        """Restore the notification count as an int when possible."""
         try:
             return int(float(raw_state))
         except (TypeError, ValueError):
             return None
 
     def __init__(self, coordinator, student_id, student_name, notifications):
-        """Initialize the sensor."""
         super().__init__(coordinator)
 
         self._data_key = "notifications"
@@ -593,24 +552,21 @@ class EduPageNotificationSensor(StateRestoringSensor):
         self._student_name = unidecode(student_name).replace(" ", "_").lower()
         self._attr_device_info = student_device_info(student_id, student_name)
 
-        self._attr_name = f"Edupage - Notification {student_name}"
+        self._attr_name = f"EduPage - Upozornenia {student_name}"
         self._name = self._attr_name
 
         self._unique_id = f"edupage_notification_{self._student_id}_{self._student_name}"
 
     @property
     def unique_id(self):
-        """Return a unique identifier for this sensor."""
         return self._unique_id
 
     @property
     def _current_notifications(self):
-        """Return the latest notifications from the coordinator."""
         return self.coordinator.data.get("notifications", [])
 
     @property
     def state(self):
-        """Return state, falling back to the last-known value."""
         if self._data_is_fresh():
             return self._set_value(len(self._current_notifications))
         if self._last_value is not None:
@@ -619,7 +575,6 @@ class EduPageNotificationSensor(StateRestoringSensor):
 
     @property
     def extra_state_attributes(self):
-        """Return additional attributes."""
         notifications = self._current_notifications
         attributes = {
             "student": self.coordinator.data.get("student", {}),
@@ -627,16 +582,12 @@ class EduPageNotificationSensor(StateRestoringSensor):
             "event_count": len(notifications),
         }
 
-        # Per-type breakdown of all notification types.
         type_counts = defaultdict(int)
         for event in notifications:
             event_type = getattr(event.event_type, "value", None) or str(event.event_type)
             type_counts[event_type] += 1
         attributes["type_counts"] = dict(type_counts)
 
-        # Expose as many recent events as safely fit below Home Assistant's
-        # recorder attribute-size limit. Each event is provided in both the
-        # structured and legacy flat formats for backward compatibility.
         events = []
 
         for event in notifications[:_MAX_EVENTS]:
@@ -752,14 +703,12 @@ class EduPageSubstitutionSensor(StateRestoringSensor):
     """Sensor for timetable changes or missing teachers for the current day."""
 
     def _coerce_restored(self, raw_state):
-        """Restore the substitution count as an int when possible."""
         try:
             return int(float(raw_state))
         except (TypeError, ValueError):
             return None
 
     def __init__(self, coordinator, student_id, student_name, data_key):
-        """data_key is 'timetable_changes' or 'missing_teachers'."""
         super().__init__(coordinator)
 
         self._student_id = student_id
@@ -767,18 +716,16 @@ class EduPageSubstitutionSensor(StateRestoringSensor):
         self._data_key = data_key
         self._attr_device_info = student_device_info(student_id, student_name)
         label = (
-            "Timetable Changes"
+            "Zmeny rozvrhu a suplovanie"
             if data_key == "timetable_changes"
-            else "Missing Teachers"
+            else "Chýbajúci učitelia"
         )
 
-        self._attr_name = f"Edupage - {label} {student_name}"
-
+        self._attr_name = f"EduPage - {label} {student_name}"
         self._unique_id = f"edupage_{data_key}_{self._student_id}_{self._student_name}"
 
     @property
     def unique_id(self):
-        """Return a unique identifier for this sensor."""
         return self._unique_id
 
     @property
@@ -824,7 +771,7 @@ class EduPageRingingSensor(StateRestoringSensor):
         self._student_id = student_id
         self._student_name = _subject_slug(student_name)
         self._attr_device_info = student_device_info(student_id, student_name)
-        self._attr_name = f"Edupage - Next Ringing {student_name}"
+        self._attr_name = f"EduPage - Najbližšie zvonenie {student_name}"
         self._unique_id = (
             f"edupage_next_ringing_{self._student_id}_{self._student_name}"
         )
@@ -860,12 +807,7 @@ class EduPageRingingSensor(StateRestoringSensor):
 
 
 class EduPageTermAverageSensor(StateRestoringSensor):
-    """Sensor showing grade count and average for a specific school term.
-
-    Reads the per-term grades live from the coordinator each poll, so the
-    average follows later coordinator updates instead of freezing the initial
-    snapshot.
-    """
+    """Sensor showing grade count and average for a specific school term."""
 
     def __init__(self, coordinator, student_id, student_name, term_key):
         super().__init__(coordinator)
@@ -874,10 +816,9 @@ class EduPageTermAverageSensor(StateRestoringSensor):
         self._student_name = _subject_slug(student_name)
         self._term_key = term_key
         self._attr_device_info = student_device_info(student_id, student_name)
-        term_label = "1st" if term_key == "first" else "2nd"
+        term_label = "1. polrok" if term_key == "first" else "2. polrok"
 
-        self._attr_name = f"Edupage - {term_label} Term Average {student_name}"
-
+        self._attr_name = f"EduPage - Priemer za {term_label} {student_name}"
         self._unique_id = (
             f"edupage_term_{term_key}_{self._student_id}_{self._student_name}"
         )
@@ -897,7 +838,6 @@ class EduPageTermAverageSensor(StateRestoringSensor):
         return self.coordinator.data.get("school_year")
 
     def _coerce_restored(self, raw_state):
-        """Restore the term average as a float when possible."""
         try:
             return round(float(raw_state), 2)
         except (TypeError, ValueError):

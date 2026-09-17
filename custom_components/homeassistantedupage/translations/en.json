@@ -1,9 +1,9 @@
 {
   "config": {
-    "flow_title": "EduPage Setup Flow",
+    "flow_title": "EduPage Setup",
     "error": {
-      "cannot_connect": "Failed to connect",
-      "invalid_auth": "Invalid credentials",
+      "cannot_connect": "Failed to connect to EduPage.",
+      "invalid_auth": "Invalid credentials.",
       "invalid_code": "The confirmation code is invalid or has expired.",
       "captcha_required": "EduPage is asking for a CAPTCHA. Try again later or check your credentials."
     },
@@ -12,34 +12,34 @@
         "data": {
           "password": "Password",
           "username": "Username",
-          "subdomain": "Subdomain"
+          "subdomain": "School subdomain"
         },
-        "description": "Enter your EduPage username, password and school subdomain.\n\nIf you have 2FA enabled, you will be asked for a confirmation code from the EduPage app.",
-        "title": "Login to your edupage account"
+        "description": "Enter your EduPage username, password and school subdomain.\n\nIf you have two-factor authentication enabled, you will be asked for a confirmation code from the EduPage app.",
+        "title": "Sign in to EduPage"
       },
       "two_factor": {
-        "title": "Two-Factor Authentication",
-        "description": "A confirmation in the EduPage mobile app is required. Enter the confirmation code shown there.",
+        "title": "Two-factor authentication",
+        "description": "Confirmation in the EduPage mobile app is required. Enter the confirmation code shown there.",
         "data": {
           "two_factor_code": "Confirmation code"
         }
       },
       "select_student": {
-        "title": "Select Student",
+        "title": "Select student",
         "description": "Choose which student this integration should track.",
         "data": {
           "student": "Student"
         }
       },
       "reconfigure": {
-        "title": "Re-authenticate EduPage",
-        "description": "Login again to refresh the expired session. If 2FA is enabled, enter the confirmation code from the EduPage app.",
+        "title": "Sign in to EduPage again",
+        "description": "Sign in again to refresh the expired session. If two-factor authentication is enabled, enter the confirmation code from the EduPage app.",
         "data": {
           "two_factor_code": "Confirmation code"
         }
       },
       "reconfigure_code": {
-        "title": "Two-Factor Authentication",
+        "title": "Two-factor authentication",
         "description": "Enter the confirmation code shown in the EduPage mobile app.",
         "data": {
           "two_factor_code": "Confirmation code"
@@ -47,9 +47,9 @@
       }
     },
     "abort": {
-      "already_configured": "Device is already configured",
+      "already_configured": "This EduPage account is already configured.",
       "no_students_found": "No students were found on this account.",
-      "reconfigured": "Successfully updated the stored session.",
+      "reconfigured": "The EduPage session was successfully refreshed.",
       "reconfigure_failed": "Re-authentication failed: {error}",
       "reauth_unsuccessful": "Re-authentication unsuccessful: {error}"
     }
@@ -58,7 +58,7 @@
     "step": {
       "init": {
         "title": "Select subjects",
-        "description": "Select the subjects for which grade sensors should be created. Other EduPage sensors are not affected.",
+        "description": "Select the subjects for which grade sensors should be created. Other EduPage entities are not affected.",
         "data": {
           "subject_ids": "Subjects"
         }
@@ -67,12 +67,63 @@
   },
   "device_automation": {
     "trigger_type": {
-      "new_grade": "A new grade was received",
-      "new_homework": "New homework was received",
+      "new_grade": "A new grade was added",
+      "new_homework": "New homework was assigned",
       "new_message": "A new message was received",
-      "new_exam": "A new exam was received",
-      "timetable_change": "A timetable change was received",
+      "new_exam": "A new exam or test was assigned",
+      "timetable_change": "A timetable or substitution change was published",
       "arrival_at_school": "An arrival at school was recorded"
+    }
+  },
+  "selector": {
+    "meal_type": {
+      "options": {
+        "snack": "Snack",
+        "lunch": "Lunch",
+        "afternoon_snack": "Afternoon snack"
+      }
+    }
+  },
+  "services": {
+    "choose_meal": {
+      "name": "Choose meal",
+      "description": "Choose a school canteen menu for the selected day and meal type.",
+      "fields": {
+        "date": {"name": "Date", "description": "Meal date in YYYY-MM-DD format."},
+        "meal_type": {"name": "Meal type", "description": "Snack, lunch or afternoon snack."},
+        "number": {"name": "Menu number", "description": "Menu number to choose."},
+        "entry_id": {"name": "Config entry", "description": "EduPage config entry ID to use when multiple accounts or students are configured."}
+      }
+    },
+    "sign_off_meal": {
+      "name": "Sign off meal",
+      "description": "Cancel the selected school canteen meal for the selected day.",
+      "fields": {
+        "date": {"name": "Date", "description": "Meal date in YYYY-MM-DD format."},
+        "meal_type": {"name": "Meal type", "description": "Snack, lunch or afternoon snack."},
+        "entry_id": {"name": "Config entry", "description": "EduPage config entry ID to use when multiple accounts or students are configured."}
+      }
+    },
+    "rate_meal": {
+      "name": "Rate meal",
+      "description": "Rate the quantity and quality of the selected school canteen menu.",
+      "fields": {
+        "date": {"name": "Date", "description": "Meal date in YYYY-MM-DD format."},
+        "meal_type": {"name": "Meal type", "description": "Snack, lunch or afternoon snack."},
+        "menu_number": {"name": "Menu number", "description": "Menu number to rate."},
+        "quantity": {"name": "Quantity", "description": "Quantity rating from 1 to 10."},
+        "quality": {"name": "Quality", "description": "Quality rating from 1 to 10."},
+        "entry_id": {"name": "Config entry", "description": "EduPage config entry ID to use when multiple accounts or students are configured."}
+      }
+    },
+    "send_message": {
+      "name": "Send message",
+      "description": "Send a message to selected students or teachers through EduPage.",
+      "fields": {
+        "recipients": {"name": "Recipients", "description": "One or more recipients by name or numeric person ID."},
+        "body": {"name": "Message text", "description": "Message body to send."},
+        "entry_id": {"name": "Config entry", "description": "EduPage config entry ID to use when multiple accounts or students are configured."}
+      }
     }
   }
 }

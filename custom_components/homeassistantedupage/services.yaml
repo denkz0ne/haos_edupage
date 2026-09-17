@@ -1,22 +1,27 @@
 choose_meal:
-  description: Select (choose) a canteen meal for the given day and meal type.
+  name: Vybrať stravu
+  description: Vyberie menu v školskej jedálni na zvolený deň a druh jedla.
   fields:
     date:
-      description: Date of the meal in YYYY-MM-DD format.
+      name: Dátum
+      description: Dátum stravy vo formáte RRRR-MM-DD.
       example: "2026-09-03"
       required: true
     meal_type:
-      description: Type of meal to choose.
+      name: Druh jedla
+      description: Desiata, obed alebo olovrant.
       example: lunch
       required: true
       selector:
         select:
+          translation_key: meal_type
           options:
             - snack
             - lunch
             - afternoon_snack
     number:
-      description: Menu number to select (1-8).
+      name: Číslo menu
+      description: Číslo menu, ktoré sa má vybrať (1 až 8).
       example: 2
       required: true
       selector:
@@ -25,55 +30,67 @@ choose_meal:
           max: 8
           mode: box
     entry_id:
-      description: Config entry ID to target when multiple EduPage entries are loaded.
+      name: Konfiguračný záznam
+      description: ID konfiguračného záznamu EduPage. Použite ho, ak je nastavených viac účtov alebo žiakov.
       example: 01J4XYZABC
       required: false
 
 sign_off_meal:
-  description: Sign off (cancel) the selected canteen meal for the given day and meal type.
+  name: Odhlásiť stravu
+  description: Odhlási vybranú stravu v školskej jedálni na zvolený deň.
   fields:
     date:
-      description: Date of the meal in YYYY-MM-DD format.
+      name: Dátum
+      description: Dátum stravy vo formáte RRRR-MM-DD.
       example: "2026-09-03"
       required: true
     meal_type:
-      description: Type of meal to sign off.
+      name: Druh jedla
+      description: Desiata, obed alebo olovrant.
       example: lunch
       required: true
       selector:
         select:
+          translation_key: meal_type
           options:
             - snack
             - lunch
             - afternoon_snack
     entry_id:
-      description: Config entry ID to target when multiple EduPage entries are loaded.
+      name: Konfiguračný záznam
+      description: ID konfiguračného záznamu EduPage. Použite ho, ak je nastavených viac účtov alebo žiakov.
       example: 01J4XYZABC
       required: false
 
 rate_meal:
-  description: Rate a canteen meal menu by quantity and quality.
+  name: Ohodnotiť stravu
+  description: Ohodnotí množstvo a kvalitu zvoleného menu v školskej jedálni.
   fields:
     date:
-      description: Date of the meal in YYYY-MM-DD format.
+      name: Dátum
+      description: Dátum stravy vo formáte RRRR-MM-DD.
       example: "2026-09-03"
       required: true
     meal_type:
-      description: Type of meal to rate.
+      name: Druh jedla
+      description: Desiata, obed alebo olovrant.
       example: lunch
       required: true
       selector:
         select:
+          translation_key: meal_type
           options:
             - snack
             - lunch
             - afternoon_snack
     menu_number:
-      description: Menu number to rate.
+      name: Číslo menu
+      description: Číslo menu, ktoré sa má hodnotiť.
       example: "2"
       required: true
     quantity:
-      description: Quantity rating (1-10).
+      name: Množstvo
+      description: Hodnotenie množstva od 1 do 10.
       example: 8
       required: true
       selector:
@@ -82,7 +99,8 @@ rate_meal:
           max: 10
           mode: box
     quality:
-      description: Quality rating (1-10).
+      name: Kvalita
+      description: Hodnotenie kvality od 1 do 10.
       example: 9
       required: true
       selector:
@@ -91,22 +109,27 @@ rate_meal:
           max: 10
           mode: box
     entry_id:
-      description: Config entry ID to target when multiple EduPage entries are loaded.
+      name: Konfiguračný záznam
+      description: ID konfiguračného záznamu EduPage. Použite ho, ak je nastavených viac účtov alebo žiakov.
       example: 01J4XYZABC
       required: false
 
 send_message:
-  description: Send a message to EduPage recipients (students or teachers).
+  name: Odoslať správu
+  description: Odošle správu vybraným žiakom alebo učiteľom cez EduPage.
   fields:
     recipients:
-      description: One or more recipients, by numeric person ID or case-insensitive name.
+      name: Príjemcovia
+      description: Jeden alebo viacerí príjemcovia podľa mena alebo číselného ID osoby.
       example: ["Test User", "12345"]
       required: true
     body:
-      description: Message body text.
-      example: "Please bring your homework tomorrow."
+      name: Text správy
+      description: Obsah správy, ktorá sa má odoslať.
+      example: "Nezabudni si zajtra priniesť domácu úlohu."
       required: true
     entry_id:
-      description: Config entry ID to target when multiple EduPage entries are loaded.
+      name: Konfiguračný záznam
+      description: ID konfiguračného záznamu EduPage. Použite ho, ak je nastavených viac účtov alebo žiakov.
       example: 01J4XYZABC
       required: false

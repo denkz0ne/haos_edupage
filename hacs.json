@@ -1,7 +1,7 @@
 {
-    "name": "homeassistantedupage",
-    "content_in_root": false,
-    "country": "DE",
-    "homeassistant": "2023.11.0",
-    "render_readme": true
-  }
+  "name": "EduPage pre Home Assistant",
+  "content_in_root": false,
+  "country": "SK",
+  "homeassistant": "2023.11.0",
+  "render_readme": true
+}

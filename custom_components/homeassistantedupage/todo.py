@@ -61,7 +61,7 @@ class EduPageHomeworkTodoEntity(CoordinatorEntity, TodoListEntity):
         self._student_name = student_name or str(student_id)
         student = coordinator.data.get("student", {}) if coordinator.data else {}
         self._student_class_names = student.get("class_names", [])
-        self._attr_name = f"EduPage - Homework {self._student_name}"
+        self._attr_name = f"EduPage - Domáce úlohy {self._student_name}"
         self._attr_unique_id = f"edupage_homework_{self._student_id}"
         self._attr_device_info = student_device_info(
             self._student_id, self._student_name
@@ -80,15 +80,15 @@ class EduPageHomeworkTodoEntity(CoordinatorEntity, TodoListEntity):
         """Map one EduPage homework event to a Home Assistant to-do item."""
         additional_data = getattr(event, "additional_data", None) or {}
         subject = self._subject_name(additional_data.get("predmetid"))
-        text = str(getattr(event, "text", None) or "Homework")
+        text = str(getattr(event, "text", None) or "Domáca úloha")
         author = getattr(event, "author", None)
         author_name = getattr(author, "name", None) or author
 
         description_parts = []
         if subject:
-            description_parts.append(f"Subject: {subject}")
+            description_parts.append(f"Predmet: {subject}")
         if author_name:
-            description_parts.append(f"Author: {author_name}")
+            description_parts.append(f"Zadal: {author_name}")
 
         is_done = bool(getattr(event, "is_done", False))
         return TodoItem(

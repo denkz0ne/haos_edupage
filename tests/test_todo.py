@@ -91,7 +91,7 @@ def test_homework_is_mapped_to_todo_item(coordinator):
     assert item.summary == "Maths: Read chapter 1"
     assert item.status == TodoItemStatus.NEEDS_ACTION
     assert item.due == date(2026, 9, 20)
-    assert item.description == "Subject: Maths\nAuthor: Mrs Teacher"
+    assert item.description == "Predmet: Maths\nZadal: Mrs Teacher"
 
 
 def test_completed_homework_uses_completed_status(coordinator):
@@ -159,3 +159,4 @@ def test_entity_is_read_only_and_uses_student_device(coordinator):
     assert entity.supported_features == 0
     assert entity.device_info["identifiers"] == {(DOMAIN, "1")}
     assert entity.device_info["name"] == "EduPage - Max Example"
+    assert entity.name == "EduPage - Domáce úlohy Max Example"
