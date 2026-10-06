@@ -6,256 +6,253 @@ Primárny scenár je široký desktop/tablet panel s dvoma deťmi. Ľavá polovi
 
 ## 1. Základný layout
 
+Dashboard je dvojstĺpcový: **ľavá polovica = dieťa A, pravá polovica = dieťa B**. Obe polovice používajú rovnakú komponentovú štruktúru a líšia sa iba dátami a jemným orientačným akcentom.
+
+Poradie v každom paneli je záväzné:
+
+1. hlavička dieťaťa,
+2. týždenný rozvrh,
+3. posledné správy / udalosti,
+4. Úlohy + Známky vedľa seba,
+5. ostatné menšie informácie.
+
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ ŠKOLA                         pondelok 5. 10.              23:41 / stav dát │
+│ ŠKOLA                                                   dátum / stav dát    │
 ├───────────────────────────────────┬──────────────────────────────────────────┤
-│ DIEŤA A                            │ DIEŤA B                                  │
-│ meno · trieda                      │ meno · trieda                            │
-│ [teraz / zajtra] [DÚ] [testy]     │ [teraz / zajtra] [DÚ] [testy]           │
+│ MENO A                             │ MENO B                                   │
+│ trieda                             │ trieda                                   │
+│ zsbieloruska.edupage.sk           │ zsbieloruska.edupage.sk                 │
+│ [DÚ] [písomky] [zmeny]            │ [DÚ] [písomky] [zmeny]                  │
 ├───────────────────────────────────┼──────────────────────────────────────────┤
-│ ROZVRH                             │ ROZVRH                                   │
-│ 1  08:00–08:45  Matematika        │ 1  08:00–08:45  Slovenský jazyk         │
-│ 2  08:55–09:40  Angličtina        │ 2  08:55–09:40  Matematika              │
-│▶3  09:50–10:35  Fyzika      TERAZ │▶3  09:50–10:35  Dejepis            TERAZ │
-│ 4  10:45–11:30  ...               │ 4  10:45–11:30  ...                     │
-│        DÚ zajtra / test / zmena    │        DÚ zajtra / test / zmena          │
+│ ROZVRH: Po–Pi × 1.–N. hodina      │ ROZVRH: Po–Pi × 1.–N. hodina            │
+│ aktuálna bunka = TERAZ             │ aktuálna bunka = TERAZ                  │
 ├───────────────────────────────────┼──────────────────────────────────────────┤
-│ DÚ A TERMÍNY                       │ DÚ A TERMÍNY                             │
-│ ! Matematika · zajtra              │ ! Angličtina · zajtra                    │
-│   pracovný zošit 24/3              │   naučiť slovíčka                        │
-├───────────────────────────────────┼──────────────────────────────────────────┤
-│ SPRÁVY                             │ SPRÁVY                                   │
-│ učiteľ · stručný text · čas        │ učiteľ · stručný text · čas              │
-├───────────────────────────────────┼──────────────────────────────────────────┤
-│ ZNÁMKY                             │ ZNÁMKY                                   │
-│ MAT 1 · dnes        SJL 2 · piatok │ ANJ 1 · dnes         FYZ 2 · štvrtok     │
+│ POSLEDNÉ SPRÁVY – plné znenie     │ POSLEDNÉ SPRÁVY – plné znenie           │
+├────────────────┬──────────────────┼──────────────────┬───────────────────────┤
+│ ÚLOHY          │ ZNÁMKY           │ ÚLOHY            │ ZNÁMKY                │
+├────────────────┴──────────────────┼──────────────────┴───────────────────────┤
+│ ostatné: suplovanie, zvonenie...  │ ostatné: suplovanie, zvonenie...        │
 └───────────────────────────────────┴──────────────────────────────────────────┘
 ```
 
-Na mobilnej šírke sa stĺpce skladajú pod seba, ale tento projekt je prioritne navrhnutý ako nástenka na väčšom displeji.
-
+Na mobilnej šírke sa panely skladajú pod seba. Primárny cieľ je desktop/tablet landscape.
 ## 2. Vizuálny štýl
 
 - moderný Home Assistant vzhľad, nie imitácia webu EduPage,
-- tmavý aj svetlý HA theme bez natvrdo definovaného pozadia,
+- tmavý aj svetlý HA theme bez natvrdo definovaného globálneho pozadia,
 - veľké zaoblené bloky, jemné deliace čiary, minimum rámikov,
-- jeden akcent pre každé dieťa len ako orientačný prvok,
-- farby významu používať striedmo:
-  - červená/oranžová = po termíne, zrušené, kritická zmena,
-  - žltá = DÚ alebo písomka na najbližší školský deň,
+- jeden jemný orientačný akcent pre každé dieťa,
+- **rozvrh nemá byť farebná mozaika podľa predmetov**; jeho základ je neutrálny a prehľadný,
+- rozvrhové bunky používajú konzistentnú typografiu, jemný kontrast pozadia a jasnú mriežku,
+- farby významu sa používajú iba na stav:
+  - červená/oranžová = po termíne, zrušené, problém,
+  - žltá = test / upozornenie,
   - zelená = splnené,
   - HA accent = práve prebiehajúca hodina,
-- žiadne farebné konfety podľa každého predmetu; po piatich minútach by z toho bol EduPage cirkus.
-
+- aktuálna hodina má byť jediný výrazný prvok v rozvrhu; ostatné bunky ostávajú pokojné a neutrálne.
 ## 3. Hlavička dieťaťa
 
-Každá polovica začína kompaktnou hlavičkou:
+Fotografia/avatar sa nepoužíva.
 
-- meno,
-- trieda, ak je dostupná,
-- stav školského dňa,
-- 3–4 malé informačné chipy:
-  - aktuálna/najbližšia hodina,
+Každá polovica začína kompaktnou textovou hlavičkou:
+
+- **meno dieťaťa** – najvýraznejší text,
+- **trieda** – sekundárny text namiesto avataru,
+- **doména školy** – napr. `zsbieloruska.edupage.sk`,
+- malé info chipy iba z dnešných stabilných dát:
   - počet nesplnených DÚ,
-  - počet blízkych písomiek,
-  - zmena rozvrhu, ak existuje.
+  - počet nadchádzajúcich písomiek,
+  - počet dnešných zmien rozvrhu, ak existujú.
 
-Chipy bez problému zmiznú, ak je hodnota nulová. Cieľom nie je ukázať štyri nuly.
-
+Chipy s nulovou hodnotou môžu zmiznúť. V hlavičke sa nepoužíva tlačidlo „Detail žiaka“ ani iné akcie bez existujúceho dátového/UX flow.
 ## 4. Rozvrh – hlavný prvok nástenky
 
-Rozvrh má byť dominantný blok a nie klasická Home Assistant kalendárová karta.
+Rozvrh je **týždenná tabuľka**, nie denný zoznam.
 
-### Jeden riadok = jedna hodina
+### Orientácia tabuľky
 
-Navrhované stĺpce:
+- **os Y = pondelok až piatok**,
+- **os X = 1. hodina až posledná dostupná hodina**,
+- prvý stĺpec je pevný a obsahuje `Po / Ut / St / Št / Pi`,
+- hlavička každého stĺpca obsahuje číslo hodiny a pod ním malým textom časový rozsah.
 
-1. číslo hodiny,
-2. čas,
-3. predmet,
-4. voliteľne učiteľ / učebňa v menšom texte,
-5. stavové ikony/chipy na pravej strane.
+### Prehľadnosť mriežky
 
-Príklady stavov:
-
-- **TERAZ** – aktuálne prebiehajúca hodina,
-- **ĎALEJ** – nasledujúca hodina,
-- **DÚ** – na predmet je naviazaná úloha s termínom na zobrazovaný deň,
-- **TEST** – písomka/skúšanie,
-- **ZMENA** – suplovanie alebo zmena rozvrhu,
-- **ODPADLO** – riadok ostáva na svojom mieste, ale je utlmený/prečiarknutý.
+- všetky hodiny majú rovnakú šírku stĺpca,
+- všetky dni majú rovnakú výšku riadku,
+- výraznejšie oddeľovať hlavičku hodín a názvy dní od obsahu,
+- predmet je v bunke dominantný, učebňa alebo učiteľ sú malé sekundárne údaje,
+- dlhé názvy predmetov sa zalomia maximálne na 2 riadky; bunka sa nerozťahuje podľa textu,
+- prázdna hodina ostáva čistá neutrálna bunka,
+- dnešný deň možno označiť iba jemne (napr. tučnejší label dňa alebo slabý podklad), nie ďalšou výraznou farbou.
 
 ### Aktuálna hodina
 
-Počas vyučovania sa celý riadok aktuálnej hodiny zvýrazní HA accent farbou. Vľavo môže byť úzky progress indikátor podľa času od začiatku do konca hodiny.
+Ak hodina práve prebieha, zvýrazní sa **iba konkrétna bunka** na priesečníku dnešného dňa a čísla hodiny.
 
-Takto používateľ jedným pohľadom vidí nielen predmet, ale aj približne koľko z hodiny zostáva.
+Odporúčané zvýraznenie:
 
-### Pred školou
+- HA accent outline alebo veľmi jemný accent fill,
+- malý badge `TERAZ`,
+- prípadne jemný glow/shadow,
+- ostatné bunky ostávajú neutrálne, aby aktívna bunka okamžite vyskočila.
 
-Zobrazí sa dnešný rozvrh a zvýrazní prvá hodina / čas do začiatku školy.
+### Najbližšia hodina
 
-### Počas školy
+Ak nič práve neprebieha, možno jemne označiť najbližšiu hodinu. Toto označenie musí byť citeľne slabšie než stav `TERAZ`.
 
-Zobrazí sa dnešný rozvrh a zvýrazní sa aktuálna hodina. Nasledujúca je jemne označená.
+### DÚ, testy, zmeny a odpadnuté hodiny
 
-### Po poslednej hodine
+Bunka môže mať malý rohový marker alebo badge:
 
-Rozvrh sa prepne na **najbližší školský deň**. Typicky teda zajtra, ale v piatok rovno pondelok; rovnako musí preskočiť deň bez vyučovania.
+- `DÚ`,
+- `TEST`,
+- `ZMENA`,
+- `ODPADLO`.
 
-Toto je dôležité: večer rodiča nezaujíma sivý pondelkový rozvrh, ktorý už skončil. Zaujíma ho, čo treba nachystať na ďalší školský deň.
+Badge nesmie prefarbiť celú bunku. Odpadnutá hodina zostáva na svojom mieste v mriežke, ale je utlmená/prečiarknutá.
 
-### Víkend / deň bez vyučovania
+### Dátový zdroj
 
-Zobrazí sa najbližší deň, pre ktorý existujú hodiny, s textom napr. **Najbližšie: pondelok 12. 10.**
+MVP skladá pracovný týždeň z existujúceho kalendára rozvrhu cez `calendar.get_events` pre interval pondelok–piatok. Nepredpokladá novú backend entitu.
+## 5. Posledné správy / udalosti
 
-## 5. DÚ a termíny
+Sekcia správ je **hneď pod rozvrhom** a používa existujúci notification senzor `Upozornenia.events`.
 
-Pod rozvrhom je karta s najbližšími nesplnenými úlohami.
+Každá správa je samostatný box. Box obsahuje:
 
-Poradie:
+- autora, ak je dostupný,
+- čas/dátum,
+- prípadne typ udalosti,
+- **celé znenie textu bez skracovania, ellipsis alebo dvojriadkového limitu**.
+
+Výška boxu sa prispôsobí obsahu. Pri dlhšom texte sa obsah prirodzene zalomí na viac riadkov. Na nástenke je lepšie zobraziť menej posledných správ v plnom znení než veľa useknutých náhľadov.
+
+Odporúčané MVP: 2–4 najnovšie relevantné položky podľa dostupného priestoru.
+
+Integrácia zatiaľ nemá spoľahlivý samostatný inbox ani read/unread model, preto sa táto sekcia chápe ako **posledné správy/udalosti**, nie ako plnohodnotná schránka EduPage.
+## 6. DÚ a termíny
+
+Pod správami nasleduje blok **Úlohy**, vedľa ktorého je blok **Známky**.
+
+Poradie DÚ:
 
 1. po termíne,
-2. na najbližší školský deň,
-3. ostatné podľa dátumu,
-4. úlohy bez dátumu na konci.
+2. najbližší termín,
+3. ostatné s dátumom,
+4. úlohy bez dátumu,
+5. splnené položky až na konci alebo vizuálne utlmené.
 
-Riadok DÚ:
+Riadok DÚ obsahuje:
 
 - predmet,
-- krátky text zadania,
+- text zadania,
 - termín,
-- stav,
-- voliteľne autor.
-
-DÚ na deň, ktorý je práve zobrazený v rozvrhu, sa zrkadlí aj malým badge pri príslušnom predmete v rozvrhu. Tak je hneď vidieť **na ktorú hodinu niečo treba**.
+- stav.
 
 Aktuálny dátový zdroj: natívna `todo` entita + kalendár DÚ/písomiek + súhrnné assignment senzory.
-
-## 6. Správy
-
-Karta ukáže posledné 2–4 relevantné správy/udalosti:
-
-- autor,
-- skrátený text,
-- relatívny čas,
-- typ udalosti.
-
-Klik/tap otvorí detail s celým textom.
-
-Aktuálne sa dá prvá verzia postaviť z `Upozornenia.events`, ale integrácia zatiaľ nemá ideálnu samostatnú message-feed entitu ani spoľahlivý unread/read model.
-
-Preto správy v MVP chápeme ako **posledné správy/udalosti**, nie ako plnohodnotný inbox EduPage.
-
 ## 7. Známky
 
-Zobrazovať posledné známky naprieč predmetmi, nie dvanásť samostatných senzorových kariet.
+Blok **Známky** je vedľa Úloh a používa dnešné predmetové grade senzory.
 
-Jeden riadok/čip:
+MVP zobrazuje po predmetoch:
 
-- skratka alebo názov predmetu,
-- známka,
-- dátum,
-- pri rozbalení názov hodnotenia, učiteľ, komentár, percentá a priemer triedy, ak ich EduPage poskytne.
+- názov predmetu,
+- poslednú známku,
+- dátum poslednej známky,
+- voliteľne názov hodnotenia.
 
-Súčasné predmetové senzory majú podrobné atribúty vrátane `latest_grade`, ale chýba spoločný chronologický feed posledných známok naprieč predmetmi.
+Detail môže neskôr využiť existujúce atribúty `latest_grade_teacher`, `latest_grade_comment`, `latest_grade_percent`, `latest_grade_max_points` a `latest_grade_class_avg_grade`.
 
-## 8. Udalosti a zmeny
+Chronologický globálny feed známok sa v MVP nepredstiera, pretože dnes neexistuje ako samostatný stabilný zdroj.
+## 8. Ostatné informácie
 
-Zmeny rozvrhu, suplovanie, písomky a ďalšie dôležité udalosti nemajú zaberať samostatné obrovské karty.
+Až pod blokmi Správy, Úlohy a Známky môžu byť menšie sekundárne karty:
 
-Navrhnutý model je krátky kontextový pás medzi rozvrhom a DÚ:
+- Suplovanie,
+- Chýbajúci učitelia,
+- Zvonenie,
+- Priemer 1. polrok,
+- Priemer 2. polrok.
 
-```text
-⚠ 4. hodina: zmena učebne     🧪 Zajtra: prírodoveda – test
-```
-
-Ak nič dôležité nie je, pás úplne zmizne.
-
+Tieto karty sú vizuálne menšie a nemajú konkurovať rozvrhu ani správam.
 ## 9. Správanie podľa času
 
 ### Ráno
 
-Priorita: dnešný rozvrh, prvá hodina, zmeny rozvrhu, dnešné testy.
+Rozvrh ostáva celý týždenný, ale dnešný deň je jemne orientačne označený a najbližšia hodina môže byť zvýraznená.
 
 ### Počas vyučovania
 
-Priorita: aktuálna hodina, nasledujúca hodina, prípadné zmeny.
+Zvýrazní sa konkrétna bunka aktuálnej hodiny stavom `TERAZ`.
 
-### Popoludní a večer
+### Po vyučovaní
 
-Priorita: najbližší školský deň + DÚ/písomky na tento deň.
+Týždenná tabuľka sa neprepína na iný layout. Aktívny stav zmizne; voliteľne sa jemne označí prvá relevantná hodina najbližšieho školského dňa.
 
-### Víkend
+### Víkend / deň bez vyučovania
 
-Priorita: najbližší školský deň a všetky nesplnené úlohy do neho.
-
-UI teda nemení len farbu. Mení informačnú prioritu podľa času.
-
+Rozvrh zostáva týždenný. Fokus je na úlohách, správach a ďalšom školskom dni, bez umelého prefarbovania celej tabuľky.
 ## 10. Čo vieme postaviť z dnešných entít
 
 | Časť UI | Dnešný zdroj | Stav |
 | --- | --- | --- |
 | aktuálna/najbližšia hodina | kalendár Rozvrh | dostupné |
-| celý denný rozvrh | `calendar.get_events` | dostupné, ale nepraktické pre čistú kartu |
+| týždenný rozvrh Po–Pi | `calendar.get_events` nad pracovným týždňom | dostupné |
 | odpadnuté hodiny | kalendár Rozvrh | dostupné |
 | DÚ zoznam | `todo` DÚ | dostupné |
 | termíny DÚ/písomiek | kalendár DÚ a písomky | dostupné |
 | počty DÚ / po termíne | assignment senzory | dostupné |
 | písomky | upcoming exams + assignment calendar | dostupné |
-| správy/udalosti | `Upozornenia.events` | čiastočne dostupné |
+| správy/udalosti v plnom texte | `Upozornenia.events` | dostupné, typovo zmiešané |
 | známky predmetu | predmetové senzory | dostupné |
 | posledná známka predmetu | `latest_grade*` atribúty | dostupné |
 | chronologický feed známok | — | chýba |
 | suplovanie/zmeny | senzor Suplovanie | dostupné |
+| chýbajúci učitelia | senzor Chýbajúci učitelia | dostupné |
 | zvonenie | senzor Zvonenie | dostupné |
+| priemery | senzory Priemer 1./2. polrok | dostupné |
 
+MVP nesmie používať údaje len preto, že by sa do dizajnu hodili. Ak nie sú dnes stabilne exponované integráciou, do nástenky zatiaľ nepatria.
 ## 11. Odporúčaná technická cesta
 
-### Fáza A – dashboard bez zásahu do API
+### Fáza A – dashboard z dnešných entít
 
 Samostatný Lovelace dashboard **Škola**, nastavený `show_in_sidebar: true`.
 
-Backend integrácie zostane zdrojom dát. Dashboard môže prvú verziu skladať z dnešných entít a `calendar.get_events`.
+Backend integrácie zostane zdrojom dát. Týždenný rozvrh sa v MVP skladá z `calendar.get_events` pre pondelok–piatok. Správy sa čítajú z `Upozornenia.events`, DÚ z `todo` a assignment senzorov a známky z predmetových senzorov.
 
-Výhoda: rýchly prototyp a overenie, čo je na rodinnej nástenke naozaj užitočné.
+### Fáza B – dashboard-friendly model
 
-Nevýhoda: rozvrh bude vyžadovať viac templatingu a pomocných dát, než je zdravé.
+Až keď sa MVP osvedčí, môže integrácia doplniť kompaktné štruktúrované entity/atribúty pre:
 
-### Fáza B – dashboard-friendly entity model
-
-Integrácia doplní kompaktné štruktúrované entity/atribúty pre:
-
-- denný rozvrh,
-- posledné známky,
-- správy,
-- školský denný súhrn.
-
-Tým prestane frontend rekonštruovať logiku z viacerých entít.
+- týždenný rozvrh,
+- agregované posledné známky,
+- čistejší message feed,
+- školský súhrn.
 
 ### Fáza C – vlastná Lovelace karta
 
-Až keď sa potvrdí layout a dátový model, má zmysel vlastná `edupage-school-board-card` alebo dvojica menších kariet.
-
-Neodporúčam začínať vlastným custom panelom v integrácii. Samostatný HA dashboard v sidebare je jednoduchší, stabilnejší a rešpektuje štandardný Lovelace routing.
-
+Custom karta má zmysel až po stabilizovaní layoutu a dátového modelu. Nezačínať vlastným panelom ani novými backend entitami len kvôli mockupu.
 ## 12. Issue backlog / návrhy na vylepšenie
 
 > GitHub Issues sú momentálne v repozitári vypnuté. Nasledujúce bloky sú pripravené ako issue návrhy na vytvorenie po ich zapnutí.
 
-### Issue A — Structured daily timetable data for dashboard UI
+### Issue A — Structured weekly timetable data for dashboard UI
 
-**Cieľ:** sprístupniť celý zobrazovaný školský deň ako stabilnú štruktúru bez potreby opakovaného `calendar.get_events` a frontendovej rekonštrukcie stavu.
+**Cieľ:** sprístupniť pracovný týždeň Po–Pi ako stabilnú štruktúru bez potreby opakovaného `calendar.get_events` a frontendovej rekonštrukcie mriežky.
 
 Navrhované dáta:
 
-- `display_date`,
-- `school_day_state`,
+- `week_start`,
+- `days[]` pre Po–Pi,
+- `lessons[]` v každom dni,
+- `current_day_index`,
 - `current_lesson_index`,
+- `next_day_index`,
 - `next_lesson_index`,
-- `lessons[]` s číslom, predmetom, časom, učiteľom, učebňou, `cancelled`, `changed`,
-- `next_school_day`.
+- predmet, čas, učiteľ, učebňa, `cancelled`, `changed`.
 
 Akceptácia:
 
@@ -321,11 +318,12 @@ Toto je dashboardový „index“, nie náhrada detailných entít.
 
 Karta má vedieť:
 
-- tabuľkový rozvrh po riadkoch,
-- current lesson progress,
-- automatický prechod na najbližší školský deň,
+- týždenný rozvrh Po–Pi × 1.–N. hodina,
+- zvýraznenie konkrétnej bunky aktuálnej hodiny,
+- jemné označenie najbližšej hodiny,
 - DÚ/test/zmena badges priamo pri hodinách,
-- kompaktný zoznam DÚ, správ a známok,
+- správy v samostatných boxoch a v plnom znení,
+- kompaktný zoznam DÚ a známok,
 - responzívne použitie v grid dashboarde.
 
 Dve inštancie karty vedľa seba vytvoria rodinnú nástenku pre dve deti. Tým sa multi-child layout nevkladá natvrdo do jednej obrovskej karty.
@@ -333,7 +331,7 @@ Dve inštancie karty vedľa seba vytvoria rodinnú nástenku pre dve deti. Tým 
 ## 13. MVP poradie
 
 1. prototyp dvojstĺpcového dashboardu z dnešných entít,
-2. structured daily timetable,
+2. structured weekly timetable,
 3. recent grades feed,
 4. message feed,
 5. daily overview,
