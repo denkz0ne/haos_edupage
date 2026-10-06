@@ -117,7 +117,7 @@ async def test_events_read_live_data_not_constructor_snapshot(hass, coordinator)
             timestamp=datetime(2026, 9, 1, 8, 0),
             additional_data={"date": "2026-09-05", "predmetid": 1},
             author=_FakeSubject(99, "Teacher"),
-            recipient="Max Example",
+            recipient="Max Kovaľ",
         )
     ]
     attrs = sensor.extra_state_attributes
@@ -128,8 +128,8 @@ async def test_events_read_live_data_not_constructor_snapshot(hass, coordinator)
     assert ev["text"] == "Read chapter 1"
     assert ev["deadline"] == "2026-09-05"
     assert ev["subject"] == "Maths"
-    assert ev["recipient"] == "Max Example"
-    assert attrs["event_1_recipient"] == "Max Example"
+    assert ev["recipient"] == "Max Kovaľ"
+    assert attrs["event_1_recipient"] == "Max Kovaľ"
     # The old flat homework-only attribute is still exposed for compatibility.
     assert attrs["event_1_id"] == 10
 
