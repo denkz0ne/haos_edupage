@@ -150,6 +150,26 @@ test('message title never hides the complete body, and user content is escaped',
   assert.match(html, /Učiteľ &lt;3/);
 });
 
+test('messages sort by actual time newest first, with stable IDs and undated items last', () => {
+  const Panel = createEnvironment();
+  const panel = new Panel();
+  panel._hass = {
+    config: { time_zone: 'Europe/Bratislava' },
+    states: { 'sensor.a_messages': { attributes: { events: [
+      { id: 1, timestamp: '2026-10-06T08:00:00+02:00', text: 'Lokálny čas', author: 'ID1', type: 'sprava' },
+      { id: 4, timestamp: '2026-10-06T07:30:00Z', text: 'Najnovšia', author: 'ID4', type: 'sprava' },
+      { id: 2, timestamp: '2026-10-06T07:30:00Z', text: 'Rovnaký čas', author: 'ID2', type: 'sprava' },
+      { id: 3, timestamp: 'neplatný dátum', text: 'Bez času', author: 'ID3', type: 'sprava' },
+    ] } } },
+  };
+
+  const html = panel.messages(student('a'));
+
+  assert.ok(html.indexOf('ID2') < html.indexOf('ID4'));
+  assert.ok(html.indexOf('ID4') < html.indexOf('ID1'));
+  assert.ok(html.indexOf('ID1') < html.indexOf('ID3'));
+});
+
 test('unrelated HA state changes cause no render and no extra data requests', async () => {
   const Panel = createEnvironment();
   const panel = new Panel();

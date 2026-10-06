@@ -14,6 +14,7 @@ from custom_components.homeassistantedupage.const import DOMAIN
 from custom_components.homeassistantedupage.sensor import (
     EduPageAssignmentSensor,
     EduPageNextHomeworkDeadlineSensor,
+    EduPageNotificationSensor,
     EduPageOpenHomeworkSensor,
     EduPageOverdueHomeworkSensor,
     EduPageUpcomingExamsSensor,
@@ -117,6 +118,19 @@ def test_assignment_sensors_exclude_sibling_notifications(coordinator):
 
     assert homework.state == 1
     assert exams.state == 1
+
+
+def test_notification_sensor_excludes_sibling_events_and_keeps_schoolwide(coordinator):
+    coordinator.data["notifications"] = [
+        _notification(1, event_type=_EventType.MESSAGE, recipient="Max Example"),
+        _notification(2, event_type=_EventType.MESSAGE, recipient="Anna Example"),
+        _notification(3, event_type=_EventType.MESSAGE, recipient=None),
+    ]
+
+    sensor = EduPageNotificationSensor(coordinator, 1, "Max Example", [])
+
+    assert sensor.state == 2
+    assert [event.event_id for event in sensor._current_notifications] == [1, 3]
 
 
 def test_overdue_homework_excludes_today_and_completed(coordinator):

@@ -392,7 +392,16 @@ class EduPageSchoolBoardPanel extends HTMLElement {
     const items = (Array.isArray(events) ? events : []).filter((item) => (
       (item.text || item.description || item.title || item.name)
       && !/(?:homework|grade|mark|test|exam)/i.test(String(item.type || item.event_type || ''))
-    )).sort((a, b) => String(b.timestamp || b.date || '').localeCompare(String(a.timestamp || a.date || '')));
+    )).map((item, index) => ({ item, index, time: eventDate(item.timestamp || item.date).getTime() }))
+      .sort((a, b) => {
+        const aValid = Number.isFinite(a.time);
+        const bValid = Number.isFinite(b.time);
+        if (aValid !== bValid) return bValid - aValid;
+        if (aValid && a.time !== b.time) return b.time - a.time;
+        const aId = String(a.item.id ?? a.item.event_id ?? '');
+        const bId = String(b.item.id ?? b.item.event_id ?? '');
+        return aId.localeCompare(bId, undefined, { numeric: true }) || a.index - b.index;
+      }).map(({ item }) => item);
     const timeZone = this._hass.config.time_zone || 'UTC';
     const rows = items.map((item) => {
       const text = plainText(item.text || item.description || item.title || item.name);

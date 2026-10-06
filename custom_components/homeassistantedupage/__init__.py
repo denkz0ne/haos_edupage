@@ -106,6 +106,7 @@ async def _collect_data(edupage, student, student_name):
     timetable_data = {}
     timetable_data_canceled = {}
     timetable_ok = False
+    timetable_failed = False
     for offset in range(14):
         current_date = timetable_start + timedelta(days=offset)
         try:
@@ -113,12 +114,13 @@ async def _collect_data(edupage, student, student_name):
                 student, current_date
             )
         except Exception as e:  # noqa: BLE001
-            _LOGGER.error(
+            _LOGGER.warning(
                 "Failed to fetch timetable data for %s: %s",
                 current_date,
                 e,
             )
-            break
+            timetable_failed = True
+            continue
         timetable_ok = True
         lessons_to_add = []
         canceled_lessons = []
@@ -133,6 +135,7 @@ async def _collect_data(edupage, student, student_name):
         if canceled_lessons:
             timetable_data_canceled[current_date] = canceled_lessons
     data_ok["timetable"] = timetable_ok
+    data_ok["timetable_partial"] = timetable_ok and timetable_failed
 
     canteen_menu_data = {}
     canteen_ok = False
@@ -320,6 +323,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     return {"timetable": {}}
 
                 student_name = student.name or stored_student_name or str(student.person_id)
+
+                # Parent sessions default to the parent account, whose grades,
+                # timeline and timetable can be empty or shared across children.
+                # Student accounts raise NotParentException and remain unchanged.
+                await edupage.switch_to_child(student)
 
                 return await _collect_data(edupage, student, student_name)
 

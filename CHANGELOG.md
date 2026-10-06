@@ -2,6 +2,13 @@
 
 Verzie tohto forku používajú formát `YYYY.MM.N`, kde `N` je poradové číslo vydania v danom mesiaci. Každá používateľsky viditeľná aktualizácia má zvýšiť verziu v `manifest.json` a pridať krátky záznam sem.
 
+## 2026.10.2
+
+- Aktualizovaná knižnica `edupage-api` na 0.13.1 vrátane opráv detského kontextu, nových typov udalostí a prázdneho jedálneho lístka.
+- Pri rodičovskom účte sa pred načítaním dát prepne API na nakonfigurované dieťa; udalosti s konkrétnym príjemcom sa filtrujú podľa dieťaťa aj v senzoroch a event entite.
+- Chyba rozvrhu v jednom dni už nepreruší načítanie ostatných dní; čiastočne načítaný týždeň sa označí.
+- Správy v sidepaneli sa radia podľa skutočného času zostupne, pri rovnakom čase stabilne podľa ID a položky bez platného dátumu zostanú na konci.
+
 ## 2026.10.1
 
 - Prepracované zobrazenie podľa mocku: jedna stránka bez vnútornej navigácie a uvítacieho bloku, väčšie písmo, kompaktné sekcie a neutrálny rozvrh.

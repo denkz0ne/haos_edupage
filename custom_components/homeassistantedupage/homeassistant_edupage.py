@@ -2,7 +2,7 @@ import logging
 
 from edupage_api import Edupage as APIEdupage
 from edupage_api import Login
-from edupage_api.exceptions import BadCredentialsException
+from edupage_api.exceptions import BadCredentialsException, NotParentException
 
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
@@ -125,6 +125,22 @@ class Edupage:
             raise UpdateFailed(
                 f"EDUPAGE error updating get_students() data from API: {e}"
             )
+
+    async def switch_to_child(self, student):
+        """Select a child context for parent accounts before reading data."""
+        student_id = getattr(student, "person_id", student)
+        try:
+            await self.hass.async_add_executor_job(
+                self.api.switch_to_child, student_id
+            )
+            return True
+        except NotParentException:
+            # Student accounts already have their own context and cannot switch.
+            return False
+        except Exception as e:  # noqa: BLE001
+            raise UpdateFailed(
+                f"EDUPAGE error selecting child {student_id}: {e}"
+            ) from e
 
     async def get_user_id(self):
         try:
@@ -315,10 +331,8 @@ class Edupage:
     async def send_message(self, recipients, body: str):
         try:
             accounts = await self.resolve_recipients(recipients)
-            # edupage-api 0.12.5 sends the first ``selectedUser`` using the exact
-            # ``EduAccount`` type check; student/teacher subclasses are not
-            # accepted and would be string-joined, so we pass the resolved
-            # recipient IDs (e.g. ``s123``/``u456``) instead of the objects.
+            # The API's selectedUser encoder does not consistently handle
+            # student/teacher subclasses, so pass resolved IDs instead.
             recipient_ids = [account.get_id() for account in accounts]
             return await self.hass.async_add_executor_job(
                 self.api.send_message, recipient_ids, body
