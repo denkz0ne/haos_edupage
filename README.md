@@ -1,4 +1,5 @@
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![Verzia integrácie](https://img.shields.io/github/v/release/denkz0ne/haos_edupage?label=verzia)](https://github.com/denkz0ne/haos_edupage/releases/latest)
 [![Hassfest](https://github.com/denkz0ne/haos_edupage/actions/workflows/hassfest.yml/badge.svg)](https://github.com/denkz0ne/haos_edupage/actions/workflows/hassfest.yml)
 [![Testy](https://github.com/denkz0ne/haos_edupage/actions/workflows/tests.yml/badge.svg)](https://github.com/denkz0ne/haos_edupage/actions/workflows/tests.yml)
 
@@ -54,6 +55,9 @@ Tento fork sa používa ako vlastný HACS repozitár a nie je potrebné kopírov
 6. Integráciu stiahnite/nainštalujte.
 7. Reštartujte Home Assistant.
 8. Otvorte **Nastavenia → Zariadenia a služby → Pridať integráciu** a vyhľadajte **EduPage**.
+
+> [!TIP]
+> Vlastný repozitár pridáte do HACS iba raz. Ďalšie verzie sa budú ponúkať v HACS pri integrácii EduPage; na použitie aktualizovaného Python kódu potom reštartujte Home Assistant.
 
 Ak ste predtým používali pôvodný repozitár `rine77/homeassistantedupage`, v HACS používajte iba jeden z oboch zdrojov. Doména integrácie zostáva `homeassistantedupage`, aby sa zachovala kompatibilita existujúcich konfiguračných záznamov, entít a automatizácií.
 
@@ -502,11 +506,15 @@ Verzia 0.4.0 a novšia pri novom nastavení alebo opätovnom prihlásení heslo 
 
 ## Aktualizácie cez HACS
 
-Ak repozitár nepoužíva GitHub Releases, HACS sleduje predvolenú vetvu repozitára. Po zmene v `main` preto môže ponúknuť aktualizáciu podľa nového commitu. Po aktualizácii Python kódu integrácie reštartujte Home Assistant.
+Tento repozitár používa GitHub Releases. Pri každej verzii sa číslo v `custom_components/homeassistantedupage/manifest.json` a sekcia v `CHANGELOG.md` zosúladia v jednom pull requeste. Po merge do `main` GitHub Actions automaticky vytvorí GitHub Release s rovnakou verziou a poznámkami z changelogu. HACS používa tieto releases pri ponúkaní aktualizácií.
 
-Pri vývoji tohto forku sa používa postup:
+Aktualizácia v Home Assistante:
 
-`feature vetva → pull request → testy → merge do main → aktualizácia v HACS → reštart Home Assistanta`
+1. Otvorte **HACS → Integrácie → EduPage pre Home Assistant**.
+2. Zvoľte **Aktualizovať**, keď sa nová verzia zobrazí.
+3. Reštartujte Home Assistant, aby sa načítal nový Python kód integrácie.
+
+Verziu nezvyšujte samostatne od changelogu. Release workflow pri chýbajúcej sekcii pre danú verziu bezpečne zlyhá namiesto vydania neúplných poznámok.
 
 ## Hlásenie problému
 
