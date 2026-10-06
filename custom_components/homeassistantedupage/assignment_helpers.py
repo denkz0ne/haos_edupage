@@ -82,11 +82,7 @@ def event_matches_student(
         ):
             return True
 
-    # If class metadata could not be loaded, keep the event rather than hiding
-    # a potentially valid assignment. The list may remain mixed for that poll,
-    # but no homework disappears because an optional lookup failed.
-    return not normalized_classes and bool(
-        " · " in normalized_recipient
-        or " - " in normalized_recipient
-        or re.match(r"^\d{1,2}\s*[a-z]?(?:\b|$)", normalized_recipient)
-    )
+    # A class-shaped recipient is not enough to identify a pupil. In parent
+    # accounts the optional class lookup can fail for one child; accepting any
+    # class in that case leaks assignments and messages from siblings' classes.
+    return False

@@ -66,8 +66,8 @@ def test_matches_class_and_teaching_group_recipients():
     )
 
 
-def test_keeps_group_recipient_when_class_metadata_is_unavailable():
-    """A failed optional class lookup must not hide valid homework."""
-    assert event_matches_student(
+def test_rejects_class_recipient_when_class_metadata_is_unavailable():
+    """Unknown class membership must not leak a sibling's assignments."""
+    assert not event_matches_student(
         SimpleNamespace(recipient="4b · Musik"), 42, "Nina Lange"
     )

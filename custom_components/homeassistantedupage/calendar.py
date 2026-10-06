@@ -118,6 +118,20 @@ class EdupageCalendar(CoordinatorEntity, CalendarEntity):
         teacher_names = [teacher.name for teacher in lesson.teachers] if lesson.teachers else []
         teachers = ", ".join(teacher_names) if teacher_names else "Neznámy učiteľ"
         description = f"Vyučujúci: {teachers}"
+        if lesson.classes:
+            class_names = ", ".join(
+                dict.fromkeys(
+                    str(getattr(item, "short", None) or getattr(item, "name", ""))
+                    for item in lesson.classes
+                    if getattr(item, "short", None) or getattr(item, "name", None)
+                )
+            )
+            if class_names:
+                description += f"\nTriedy/skupiny: {class_names}"
+        if lesson.groups:
+            group_names = ", ".join(str(group) for group in lesson.groups if group)
+            if group_names:
+                description += f"\nSkupina: {group_names}"
         room = None
         if lesson.classrooms:
             room = lesson.classrooms[0].name

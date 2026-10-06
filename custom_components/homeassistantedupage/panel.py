@@ -15,7 +15,7 @@ from .const import CONF_STUDENT_NAME, CONF_SUBDOMAIN, DOMAIN
 
 PANEL_URL = "edupage-school"
 PANEL_JS = "/homeassistantedupage/edupage-school-board-panel.js"
-PANEL_JS_VERSION = "2026.10.3"
+PANEL_JS_VERSION = "2026.10.4"
 _PANEL_DATA_KEY = "homeassistantedupage_school_board_panel"
 
 _PANEL_DATA_SCHEMA = {
@@ -24,9 +24,11 @@ _PANEL_DATA_SCHEMA = {
 
 _ENTITY_PREFIXES = {
     "timetable": "edupage_calendar_",
+    "canteen": "edupage_canteen_calendar_",
     "assignments": "edupage_assignments_",
     "todo": "edupage_homework_",
     "notifications": "edupage_notification_",
+    "attendance": "edupage_attendance_",
     "events": "edupage_events_",
     "open_homework": "edupage_open_homework_",
     "overdue_homework": "edupage_overdue_homework_",

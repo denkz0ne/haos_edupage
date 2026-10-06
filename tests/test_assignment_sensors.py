@@ -1,6 +1,6 @@
 """Tests for homework and exam summary sensors."""
 
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 import logging
 from types import SimpleNamespace
@@ -13,6 +13,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from custom_components.homeassistantedupage.const import DOMAIN
 from custom_components.homeassistantedupage.sensor import (
     EduPageAssignmentSensor,
+    EduPageAttendanceSensor,
     EduPageNextHomeworkDeadlineSensor,
     EduPageNotificationSensor,
     EduPageOpenHomeworkSensor,
@@ -130,6 +131,30 @@ def test_notification_sensor_excludes_sibling_events_and_keeps_schoolwide(coordi
     sensor = EduPageNotificationSensor(coordinator, 1, "Max Example", [])
 
     assert sensor.state == 2
+
+
+def test_attendance_sensor_reports_latest_arrival_and_departure(coordinator):
+    coordinator.data["notifications"] = [
+        SimpleNamespace(
+            event_type="pipnutie", text="Odchod 06.10.2026 13:47:41",
+            timestamp=datetime(2026, 10, 6, 13, 47, 42), recipient="Max Example",
+        ),
+        SimpleNamespace(
+            event_type="pipnutie", text="Príchod 06.10.2026 07:44:23",
+            timestamp=datetime(2026, 10, 6, 7, 44, 29), recipient="Max Example",
+        ),
+        SimpleNamespace(
+            event_type="pipnutie", text="Príchod 06.10.2026 15:00:00",
+            timestamp=datetime(2026, 10, 6, 15, 0), recipient="Anna Example",
+        ),
+    ]
+
+    sensor = EduPageAttendanceSensor(coordinator, 1, "Max Example")
+
+    assert sensor.state == "mimo školy"
+    attrs = sensor.extra_state_attributes
+    assert attrs["last_arrival"] == "2026-10-06T07:44:29"
+    assert attrs["last_departure"] == "2026-10-06T13:47:42"
     assert [event.event_id for event in sensor._current_notifications] == [1, 3]
 
 

@@ -134,6 +134,35 @@ async def _collect_data(edupage, student, student_name):
             timetable_data[current_date] = lessons_to_add
         if canceled_lessons:
             timetable_data_canceled[current_date] = canceled_lessons
+    # Some child records omit their class label and get_classes() can fail to
+    # resolve the matching object. Recover it from the child-targeted timetable
+    # before filtering class-recipient assignments and messages.
+    if not student_data.get("class_names") and student_data.get("class_id") is not None:
+        for day_lessons in timetable_data.values():
+            for lesson in day_lessons:
+                matching_class = next(
+                    (
+                        item
+                        for item in getattr(lesson, "classes", []) or []
+                        if str(getattr(item, "class_id", ""))
+                        == str(student_data["class_id"])
+                    ),
+                    None,
+                )
+                if matching_class is not None:
+                    names = [
+                        value
+                        for value in (
+                            getattr(matching_class, "short", None),
+                            getattr(matching_class, "name", None),
+                        )
+                        if value
+                    ]
+                    if names:
+                        student_data["class_names"] = list(dict.fromkeys(names))
+                        break
+            if student_data.get("class_names"):
+                break
     data_ok["timetable"] = timetable_ok
     data_ok["timetable_partial"] = timetable_ok and timetable_failed
 

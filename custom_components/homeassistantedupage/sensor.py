@@ -171,6 +171,7 @@ async def async_setup_entry(
             coordinator, student_id, student_name, notifications
         )
     )
+    sensors.append(EduPageAttendanceSensor(coordinator, student_id, student_name))
     sensors.append(
         EduPageSubstitutionSensor(
             coordinator, student_id, student_name, "timetable_changes"
@@ -683,6 +684,74 @@ class EduPageNotificationSensor(StateRestoringSensor):
             if subject.subject_id == subject_id:
                 return subject.name
         return None
+
+
+class EduPageAttendanceSensor(CoordinatorEntity, SensorEntity):
+    """Expose the latest EduPage arrival/departure record for a pupil."""
+
+    _attr_icon = "mdi:account-school"
+
+    def __init__(self, coordinator, student_id, student_name):
+        super().__init__(coordinator)
+        self._student_id = student_id
+        self._student_name = student_name or str(student_id)
+        self._attr_name = compact_entity_name(self._student_name, "Dochádzka")
+        self._attr_unique_id = f"edupage_attendance_{student_id}_{_subject_slug(self._student_name)}"
+        self._attr_device_info = student_device_info(student_id, self._student_name)
+
+    @property
+    def available(self):
+        return _section_fresh(self.coordinator, "notifications")
+
+    def _records(self):
+        student = self.coordinator.data.get("student", {}) if self.coordinator.data else {}
+        class_names = student.get("class_names", [])
+        records = []
+        for event in (self.coordinator.data or {}).get("notifications", []) or []:
+            if _event_type_value(event) != "pipnutie":
+                continue
+            if not event_matches_student(
+                event, self._student_id, self._student_name, class_names
+            ):
+                continue
+            text = str(getattr(event, "text", "") or "").strip()
+            if text.casefold().startswith("príchod"):
+                kind = "arrival"
+            elif text.casefold().startswith("odchod"):
+                kind = "departure"
+            else:
+                continue
+            timestamp = getattr(event, "timestamp", None)
+            if isinstance(timestamp, datetime):
+                order = timestamp.timestamp()
+                display = timestamp.isoformat()
+            else:
+                parsed = dt_util.parse_datetime(str(timestamp or ""))
+                order = parsed.timestamp() if parsed else float("-inf")
+                display = parsed.isoformat() if parsed else None
+            records.append((order, kind, display, text))
+        return sorted(records, reverse=True)
+
+    @property
+    def state(self):
+        latest = self._records()
+        if not latest:
+            return "unknown"
+        return "mimo školy" if latest[0][1] == "departure" else "v škole"
+
+    @property
+    def extra_state_attributes(self):
+        records = self._records()
+        attrs = {"student_id": self._student_id, "student_name": self._student_name}
+        for kind, label in (("arrival", "last_arrival"), ("departure", "last_departure")):
+            record = next((item for item in records if item[1] == kind), None)
+            if record:
+                attrs[label] = record[2] or record[3]
+        if records:
+            attrs["last_event"] = records[0][3]
+            attrs["last_event_at"] = records[0][2]
+        attrs["data_stale"] = not self.available
+        return attrs
 
 
 def _subject_slug(name):

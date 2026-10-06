@@ -10,10 +10,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from custom_components.homeassistantedupage.event import (
+    EVENT_ARRIVAL_AT_SCHOOL,
+    EVENT_DEPARTURE_FROM_SCHOOL,
     EVENT_NEW_EXAM,
     EVENT_NEW_GRADE,
     EVENT_NEW_HOMEWORK,
     EduPageEventEntity,
+    _attendance_event_type,
 )
 
 
@@ -159,3 +162,8 @@ def test_event_entity_creates_student_device(coordinator):
         ("homeassistantedupage", "1")
     }
     assert entity.device_info["name"] == "EduPage - Max Example"
+
+
+def test_attendance_records_distinguish_arrival_from_departure():
+    assert _attendance_event_type(_event(1, "pipnutie", text="Príchod 06.10.2026 07:44:23")) == EVENT_ARRIVAL_AT_SCHOOL
+    assert _attendance_event_type(_event(2, "pipnutie", text="Odchod 06.10.2026 13:47:41")) == EVENT_DEPARTURE_FROM_SCHOOL

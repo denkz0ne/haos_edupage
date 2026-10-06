@@ -37,12 +37,14 @@ const subjectLabel = (name) => ({
   'výtvarná výchova': 'VV', 'hudobná výchova': 'HV', 'náboženská výchova': 'NV',
   'etická výchova': 'EV', 'informatika': 'INF', 'prírodoveda': 'PRI',
   'dejepis': 'DEJ', 'fyzika': 'FYZ', 'chémia': 'CHE', 'biológia': 'BIO',
+  'vlastiveda': 'VLA',
   'geografia': 'GEO', 'občianska náuka': 'OBN', 'technika': 'TECH',
   'človek a príroda': 'ČaP', 'človek a spoločnosť': 'ČaS', 'človek a svet práce': 'ČaSP',
 }[name.toLocaleLowerCase('sk')] || (name.length > 14 ? name.split(/\s+/).filter((word) => word.length > 1).slice(0, 5).map((word) => word[0]).join('').toLocaleUpperCase('sk') : name));
 const icon = (name) => {
   const paths = {
     calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18M8 15h2M14 15h2"/>',
+    food: '<path d="M7 3v7M4 3v4a3 3 0 0 0 6 0V3M7 10v11M17 3c-2 2-3 5-3 8h3v10M17 3v8"/>',
     mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/>',
     tasks: '<rect x="4" y="4" width="16" height="17" rx="2"/><path d="M9 4V2h6v2M8 12l2 2 5-5M8 18h8"/>',
     grades: '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>',
@@ -92,12 +94,14 @@ const STYLES = `
   .student-head{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:64px;padding:3px 10px}.student-id h2{font-size:24px;line-height:1.15;letter-spacing:-.5px;margin:0 0 4px}.student-id p{margin:0;font-size:15px;line-height:1.4}.school-domain{font-size:13px;color:var(--muted);overflow-wrap:anywhere}.summary-chips{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.summary-chip{display:flex;align-items:center;gap:7px;border:1px solid color-mix(in srgb,var(--tone) 24%,var(--line));border-radius:9px;padding:7px 9px;background:var(--surface);font-size:12px;line-height:1.25}.summary-chip strong{font-size:19px}.summary-chip.homework{color:var(--danger)}.summary-chip.exam{color:var(--warning)}.summary-chip.change{color:var(--accent)}
   .section{min-width:0;background:var(--surface);border:1px solid color-mix(in srgb,var(--line) 65%,transparent);border-radius:10px;overflow:hidden}.section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 11px;border-bottom:1px solid var(--line);min-height:36px}.section-head h3{display:flex;align-items:center;gap:8px;margin:0;font-size:17px;line-height:1.25}.section-head h3 svg{color:var(--accent);width:20px;height:20px}.section-head small{font-size:12px;color:var(--muted);text-align:right}.messages-section h3 svg{color:#e35e76}.tasks-section h3 svg{color:#289c74}.grades-section h3 svg{color:#d3a226}.section-body{padding:3px 10px 5px}
   .timetable-scroll{overflow-x:auto;padding:4px 6px 6px}.timetable{width:100%;min-width:480px;table-layout:fixed;border-collapse:separate;border-spacing:3px}.timetable th,.timetable td{padding:0}.timetable col.day-col{width:35px}.period-head{text-align:center;height:35px;font-size:14px;font-weight:700;color:var(--text)}.period-head span{display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:3px;white-space:nowrap}.day-label{text-align:center;font-size:14px;color:var(--muted)}.day-label span{display:block;font-size:10px;font-weight:400;margin-top:2px}.day-label.today{color:var(--accent);font-weight:800}.timetable td{height:44px;background:var(--soft);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);border-radius:6px;vertical-align:middle}.timetable td.empty{background:color-mix(in srgb,var(--text) 1.5%,var(--surface));border-color:color-mix(in srgb,var(--line) 45%,transparent)}
-  .lesson{display:grid;justify-items:center;align-content:center;padding:2px 3px;gap:1px;position:relative;height:42px;min-height:42px;line-height:1.2}.lesson abbr{font-size:16px;font-weight:700;text-decoration:none;text-align:center;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.lesson small{font-size:12px;color:var(--muted);text-align:center}.timetable td.active{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--surface));box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 10%,transparent)}.timetable td.next{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}.lesson.cancelled abbr{text-decoration:line-through;color:var(--muted)}.lesson:has(.lesson-flags) small{justify-self:start;max-width:calc(100% - 32px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lesson-flags{position:absolute;bottom:2px;top:auto;right:2px;left:auto;display:flex;gap:3px;flex-wrap:wrap;justify-content:center}.tag{font-size:8px;font-weight:700;border-radius:4px;padding:1px 2px;background:var(--soft);color:var(--muted)}.tag.now{background:var(--accent);color:var(--text-primary-color,#fff)}.tag.amber{background:color-mix(in srgb,#f6be37 20%,var(--surface));color:var(--warning)}.tag.red{background:color-mix(in srgb,var(--danger) 10%,var(--surface));color:var(--danger)}.tag.next{color:var(--accent)}
+  .timetable tr.today td:not(.active){background:color-mix(in srgb,#58a8ef 12%,var(--surface));border-color:color-mix(in srgb,#58a8ef 24%,var(--line))}.timetable tr.today td.empty{background:color-mix(in srgb,#58a8ef 8%,var(--surface))}.lesson{display:grid;justify-items:center;align-content:center;padding:2px 3px;gap:1px;position:relative;height:42px;min-height:42px;line-height:1.2}.lesson abbr{font-size:16px;font-weight:700;text-decoration:none;text-align:center;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.lesson small{font-size:12px;color:var(--muted);text-align:center}.timetable td.active{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 24%,var(--surface));box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 26%,transparent)}.lesson.cancelled abbr{text-decoration:line-through;color:var(--muted)}.lesson:has(.lesson-flags) small{justify-self:start;max-width:calc(100% - 32px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lesson-flags{position:absolute;bottom:2px;top:auto;right:2px;left:auto;display:flex;gap:3px;flex-wrap:wrap;justify-content:center}.tag{font-size:8px;font-weight:700;border-radius:4px;padding:1px 2px;background:var(--soft);color:var(--muted)}.tag.now{background:var(--accent);color:var(--text-primary-color,#fff)}.tag.amber{background:color-mix(in srgb,#f6be37 20%,var(--surface));color:var(--warning)}.tag.red{background:color-mix(in srgb,var(--danger) 10%,var(--surface));color:var(--danger)}
   .message{display:grid;grid-template-columns:7px 112px minmax(0,1fr) 74px;column-gap:8px;padding:3px 0;border-bottom:1px solid var(--line)}.message:last-child{border:0}.message-dot{width:6px;height:6px;margin-top:7px;background:var(--tone);border-radius:50%}.message-author{font-size:13px;line-height:1.4}.message time{font-size:11px;color:var(--muted);text-align:right;line-height:1.5}.message p{margin:0;white-space:pre-line;overflow-wrap:anywhere;font-size:14px;line-height:1.45}.message-title{display:block;font-size:14px;margin-bottom:3px}
   .two-panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;align-items:start}.task{display:grid;grid-template-columns:16px minmax(0,1fr);gap:8px;padding:3px 0;border-bottom:1px solid var(--line)}.task:last-child{border:0}.checkbox{width:15px;height:15px;border:1.5px solid var(--muted);border-radius:3px;margin-top:2px;display:grid;place-items:center;font-size:11px}.task.done .checkbox{background:#279467;border-color:#279467;color:white}.task.done{color:var(--muted)}.task.done .task-text{text-decoration:line-through}.task-main{display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-bottom:3px;font-size:14px}.task-main strong{font-weight:700}.task-main time{font-size:12px;white-space:nowrap;color:var(--muted)}.task-text{font-size:13px;line-height:1.4;white-space:pre-line;overflow-wrap:anywhere}.task.overdue .task-main{color:var(--danger)}.task.overdue .checkbox{border-color:var(--danger)}.task-status{font-size:11px;margin-top:3px;color:var(--muted)}.task.overdue .task-status{color:var(--danger)}
   .grade-row{display:grid;grid-template-columns:minmax(0,1fr) 29px 42px;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--line);min-height:36px}.grade-row:last-child{border:0}.grade-row b{font-size:14px;line-height:1.25;font-weight:600;overflow-wrap:anywhere}.grade-row small{display:block;font-size:12px;line-height:1.3;color:var(--muted);margin-top:3px}.grade-row time{font-size:12px;color:var(--muted);text-align:right}.grade{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;font-size:16px;font-weight:700;background:var(--soft);color:var(--text)}.grade.good{background:color-mix(in srgb,#38ab73 18%,var(--surface));color:var(--success)}.grade.warning{background:color-mix(in srgb,#f6be37 23%,var(--surface));color:var(--warning)}.grade.bad{background:color-mix(in srgb,var(--danger) 16%,var(--surface));color:var(--danger)}
   .extras{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.metric{display:flex;align-items:center;gap:7px;min-width:0;padding:8px;border-radius:9px;background:var(--surface);border:1px solid color-mix(in srgb,var(--line) 65%,transparent)}.metric>svg{color:var(--accent);width:20px;height:20px}.metric-content{flex:1;min-width:0}.metric-label{font-size:12px;color:var(--muted);margin-bottom:3px}.metric-value{font-size:16px;line-height:1.25;font-weight:700;overflow-wrap:anywhere}.term-values{display:flex;gap:3px 8px;flex-wrap:wrap;font-size:15px}.term-values small{font-size:11px;color:var(--muted);font-weight:400;margin-left:4px}.empty-state{padding:13px 11px;color:var(--muted);font-size:14px;line-height:1.5}.schedule-empty{min-height:278px;display:grid;align-content:center;text-align:center;gap:6px}.schedule-empty strong{font-size:16px;color:var(--text)}.error{color:var(--danger)}.board-notice{grid-column:1/-1;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}.all-records{margin-top:4px}.all-records summary{cursor:pointer;color:var(--accent);font-size:12px;padding:5px 0;list-style-position:inside}.all-records[open] summary{border-bottom:1px solid var(--line)}.data-note{font-size:12px;color:var(--muted);padding:5px 10px}.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin-right:6px;vertical-align:middle}
   @media(min-width:1900px){.board{gap:18px;padding:16px}.lesson abbr{font-size:18px}.lesson small{font-size:13px}.timetable td{height:53px}.message p{font-size:15px}}
+  .attendance-times{display:block;font-size:11px;line-height:1.35;color:var(--muted);margin-top:3px;white-space:nowrap}.menu-button{width:auto;padding:0 10px;display:flex;gap:6px;align-items:center;color:var(--accent);font-size:13px}.menu-button svg{width:18px;height:18px}.menu-modal{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:18px;background:rgba(15,23,42,.48)}.menu-dialog{width:min(680px,100%);max-height:min(80vh,760px);overflow:auto;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 55px rgba(15,23,42,.25)}.menu-dialog-head{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--line)}.menu-dialog-head h2{margin:0;font-size:20px}.menu-days{padding:4px 16px 14px}.menu-day{padding:12px 0;border-bottom:1px solid var(--line)}.menu-day:last-child{border:0}.menu-day h3{margin:0 0 7px;font-size:16px;text-transform:capitalize}.menu-meal{display:grid;grid-template-columns:96px 1fr;gap:8px;padding:4px 0;line-height:1.4}.menu-meal strong{font-size:13px}.menu-meal span{white-space:pre-line;font-size:14px}
+  .extras{grid-template-columns:repeat(5,minmax(0,1fr))}
   @media(max-width:1200px){.extras{grid-template-columns:repeat(2,minmax(0,1fr))}.message{grid-template-columns:7px 93px minmax(0,1fr) 62px}.message time{font-size:10px}}
   @media(max-width:980px){.board{grid-template-columns:minmax(0,1fr);padding:10px;gap:12px}.student-head{min-height:64px}.student-id h2{font-size:23px}}
   @media(max-width:540px){.topbar{padding:8px 10px;min-height:54px}.message{grid-template-columns:7px minmax(0,1fr) auto}.message .message-text{grid-column:2/-1;grid-row:2}.message time{font-size:11px}.page-title h1{font-size:19px}.top-meta time{font-size:12px}.top-meta span{display:none}.board{padding:8px}.student{padding:6px;gap:7px}.student-head{flex-wrap:wrap;padding:6px}.summary-chips{justify-content:flex-start}.summary-chip{padding:5px 7px}.student-id h2{font-size:23px}.two-panels{grid-template-columns:minmax(0,1fr)}.section-head h3{font-size:17px}.extras{gap:6px}.metric{padding:8px}.metric-label{font-size:12px}.timetable-scroll{padding:3px}.schedule-empty{min-height:180px}}
@@ -119,6 +123,10 @@ class EduPageSchoolBoardPanel extends HTMLElement {
     this._localCache = { students: null, mappingAt: 0, records: new Map() };
     this._seenStates = new Map();
     this._mappingLoading = false;
+    this._menuOpen = false;
+    this._menuLoading = false;
+    this._menuItems = null;
+    this._menuError = '';
   }
 
   connectedCallback() {
@@ -326,7 +334,6 @@ class EduPageSchoolBoardPanel extends HTMLElement {
       period.end = period.start + Math.min(45, durations[Math.floor(durations.length / 2)] || 45);
     });
     const usable = events.filter((event) => !/^\[Odpadlo\]/i.test(event.summary || ''));
-    const next = usable.some((event) => now >= event.start && now < event.end) ? null : usable.filter((event) => event.start > now).sort((a, b) => a.start - b.start)[0];
     const assignments = this.eventList(student.entities?.assignments);
     const today = dateKey(parts(now, timeZone));
     const rows = week.days.map((day, dayIndex) => {
@@ -349,7 +356,6 @@ class EduPageSchoolBoardPanel extends HTMLElement {
         while (i + span < periods.length && periods[i + span].start < latestEnd
           && !dayEvents.some((event) => periods[i + span].starts.includes(event.minute))) span += 1;
         const active = group.some((event) => usable.includes(event) && now >= event.start && now < event.end);
-        const upcoming = !active && group.includes(next);
         const bySubject = new Map();
         group.forEach((event) => {
           const subject = plainText(event.summary || event.message || 'Hodina').replace(/^\[Odpadlo\]\s*/i, '');
@@ -365,7 +371,7 @@ class EduPageSchoolBoardPanel extends HTMLElement {
             return plainText(task.summary).toLocaleLowerCase('sk').includes(subject.toLocaleLowerCase('sk')) && !/^\[Splnené\]/i.test(task.summary || '');
           });
           const flags = [
-            active && !cancelled ? '<span class="tag now">TERAZ</span>' : upcoming && !cancelled ? '<span class="tag next">ĎALEJ</span>' : '',
+            active && !cancelled ? '<span class="tag now">TERAZ</span>' : '',
             cancelled ? '<span class="tag red">ODPADLO</span>' : '',
             matches.some((task) => /\[(?:Písomka|Test|Skúšanie)\]/i.test(task.summary)) ? '<span class="tag amber">TEST</span>' : '',
             matches.some((task) => /\[DÚ\]/i.test(task.summary)) ? '<span class="tag amber">DÚ</span>' : '',
@@ -374,10 +380,10 @@ class EduPageSchoolBoardPanel extends HTMLElement {
           const tooltip = same.map((event) => `${subject}\n${fmtTime(event.start, timeZone)}–${fmtTime(event.end, timeZone)}\n${plainText(event.description || '')}`).join('\n\n');
           return `<div class="lesson ${cancelled ? 'cancelled' : ''}" title="${esc(tooltip)}"><abbr title="${esc(subject)}">${esc(subjectLabel(subject))}</abbr><small>${esc(rooms || (same.length > 1 ? `${same.length} skupiny` : ''))}</small>${flags ? `<span class="lesson-flags">${flags}</span>` : ''}</div>`;
         }).join('');
-        cells += `<td colspan="${span}" class="${active ? 'active' : upcoming ? 'next' : ''}">${lessons}</td>`;
+        cells += `<td colspan="${span}" class="${active ? 'active' : ''}">${lessons}</td>`;
         i += span;
       }
-      return `<tr><th scope="row" class="day-label ${day.key === today ? 'today' : ''}">${['Po', 'Ut', 'St', 'Št', 'Pi'][dayIndex]}<span>${day.day}. ${day.month}.</span></th>${cells}</tr>`;
+      return `<tr class="${day.key === today ? 'today' : ''}"><th scope="row" class="day-label ${day.key === today ? 'today' : ''}">${['Po', 'Ut', 'St', 'Št', 'Pi'][dayIndex]}<span>${day.day}. ${day.month}.</span></th>${cells}</tr>`;
     }).join('');
     return `<div class="timetable-scroll" data-scroll-key="${esc(student.key)}"><table class="timetable" aria-label="Týždenný rozvrh: ${esc(student.name)}"><colgroup><col class="day-col">${periods.map(() => '<col>').join('')}</colgroup><thead><tr><th scope="col" aria-label="Deň"></th>${periods.map((period, i) => `<th scope="col" class="period-head">${i + 1}<span>${clock(period.start)}–${clock(period.end)}</span></th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>${this._calendarErrors[id] ? `<p class="data-note error">${esc(this._calendarErrors[id])} Zobrazený je posledný načítaný rozvrh.</p>` : ''}`;
   }
@@ -412,7 +418,7 @@ class EduPageSchoolBoardPanel extends HTMLElement {
       const whenLabel = !Number.isNaN(whenDate.getTime()) && dateKey(parts(whenDate, timeZone)) === dateKey(parts(new Date(), timeZone)) ? fmtTime(when, timeZone) : fmtDate(when, timeZone);
       return `<article class="message"><span class="message-dot"></span><strong class="message-author">${esc(author || 'Správa zo školy')}</strong><div class="message-text">${title && title !== text ? `<b class="message-title">${esc(title)}</b>` : ''}<p>${esc(text)}</p></div>${when ? `<time title="${esc(fmtDate(when, timeZone))} ${esc(fmtTime(when, timeZone))}">${esc(whenLabel)}</time>` : '<span></span>'}</article>`;
     });
-    return this.inlineRows(rows, `${student.key}:messages`, 3) || '<div class="empty-state">Žiadne posledné správy na zobrazenie.</div>';
+    return this.inlineRows(rows, `${student.key}:messages`, 10) || '<div class="empty-state">Žiadne posledné správy na zobrazenie.</div>';
   }
 
   todos(student) {
@@ -458,6 +464,70 @@ class EduPageSchoolBoardPanel extends HTMLElement {
     return `<div class="metric">${icon(glyph)}<div class="metric-content"><div class="metric-label">${esc(label)}</div><div class="metric-value">${esc(textState(this._hass, student.entities?.[key]))}</div></div></div>`;
   }
 
+  async loadCanteen() {
+    if (this._menuLoading || this._menuItems !== null) return;
+    const entityId = this._students.find((item) => item.entities?.canteen)?.entities.canteen;
+    if (!entityId) {
+      this._menuError = 'Kalendár jedálne nie je dostupný.';
+      this.render();
+      return;
+    }
+    this._menuLoading = true;
+    this._menuError = '';
+    this.render();
+    const timeZone = this._hass.config.time_zone || 'UTC';
+    const today = parts(new Date(), timeZone);
+    const end = new Date(Date.UTC(today.year, today.month - 1, today.day + 14));
+    const startDate = localMidnightISO(today.year, today.month, today.day, timeZone);
+    const endDate = localMidnightISO(end.getUTCFullYear(), end.getUTCMonth() + 1, end.getUTCDate(), timeZone);
+    try {
+      this._menuItems = await this.readRecord(`canteen:${entityId}:${dateKey(today)}`, async () => {
+        const result = await this._hass.callWS({
+          type: 'call_service', domain: 'calendar', service: 'get_events',
+          target: { entity_id: entityId }, return_response: true,
+          service_data: { start_date_time: startDate, end_date_time: endDate },
+        });
+        const response = result?.response || result || {};
+        const items = response[entityId];
+        if (!Array.isArray(items) && !Array.isArray(items?.events)) throw new Error('Home Assistant nevrátil jedálny lístok.');
+        return Array.isArray(items) ? items : items.events;
+      });
+    } catch (error) {
+      this._menuError = error?.message || 'Jedálny lístok sa nepodarilo načítať.';
+    } finally {
+      this._menuLoading = false;
+      this.render();
+    }
+  }
+
+  canteenModal() {
+    if (!this._menuOpen) return '';
+    let body = '';
+    if (this._menuLoading) body = '<div class="empty-state" role="status"><i class="spinner"></i>Načítavam jedálny lístok…</div>';
+    else if (this._menuError) body = `<div class="empty-state error" role="status">${esc(this._menuError)}</div>`;
+    else {
+      const timeZone = this._hass.config.time_zone || 'UTC';
+      const grouped = new Map();
+      for (const item of [...(this._menuItems || [])].sort((a, b) => eventDate(a.start) - eventDate(b.start))) {
+        const key = dateKey(parts(item.start, timeZone));
+        if (!grouped.has(key)) grouped.set(key, { date: item.start, meals: [] });
+        grouped.get(key).meals.push(item);
+      }
+      body = grouped.size ? [...grouped.values()].map(({ date, meals }) => `<section class="menu-day"><h3>${esc(fmtDate(date, timeZone, { weekday: 'long', day: 'numeric', month: 'long' }))}</h3>${meals.map((meal) => `<div class="menu-meal"><strong>${esc(meal.summary || 'Jedlo')}</strong><span>${esc(plainText(meal.description || meal.message || ''))}</span></div>`).join('')}</section>`).join('') : '<div class="empty-state">Jedálny lístok zatiaľ nie je zverejnený.</div>';
+    }
+    return `<div class="menu-modal" data-action="close-menu" role="presentation"><section class="menu-dialog" role="dialog" aria-modal="true" aria-labelledby="canteen-title"><header class="menu-dialog-head"><h2 id="canteen-title">Jedálny lístok</h2><button class="icon-button" data-action="close-menu" aria-label="Zavrieť jedálny lístok">×</button></header><div class="menu-days">${body}</div></section></div>`;
+  }
+
+  attendance(student) {
+    const id = student.entities?.attendance;
+    const attrs = attributes(this._hass, id);
+    const timeZone = this._hass.config.time_zone || 'UTC';
+    const state = textState(this._hass, id, '—');
+    const arrival = attrs.last_arrival ? fmtTime(attrs.last_arrival, timeZone) : '—';
+    const departure = attrs.last_departure ? fmtTime(attrs.last_departure, timeZone) : '—';
+    return `<div class="metric" aria-label="Dochádzka: ${esc(state)}">${icon('people')}<div class="metric-content"><div class="metric-label">Dochádzka</div><div class="metric-value">${esc(state)}</div><small class="attendance-times">Príchod ${esc(arrival)} · odchod ${esc(departure)}</small></div></div>`;
+  }
+
   studentCard(student) {
     const timeZone = this._hass.config.time_zone || 'UTC';
     const days = schoolWeek(new Date(), timeZone).days;
@@ -480,7 +550,7 @@ class EduPageSchoolBoardPanel extends HTMLElement {
       <section class="section timetable-section">${sectionHead('Rozvrh hodín', 'calendar', `${days[0].day}. ${days[0].month}. – ${days[4].day}. ${days[4].month}.`)}${this.schedule(student)}${assignmentNote}</section>
       <section class="section messages-section">${sectionHead('Posledné správy', 'mail')}<div class="section-body">${this.messages(student)}</div></section>
       <div class="two-panels"><section class="section tasks-section">${sectionHead('Úlohy', 'tasks')}<div class="section-body">${this.todos(student)}</div></section><section class="section grades-section">${sectionHead('Známky', 'grades')}<div class="section-body">${this.grades(student)}</div></section></div>
-      <div class="extras">${this.metric(student, 'timetable_changes', 'Suplovanie / zmeny', 'swap')}${this.metric(student, 'next_ringing', 'Najbližšie zvonenie', 'clock')}${this.metric(student, 'missing_teachers', 'Chýbajúci učitelia', 'people')}<div class="metric">${icon('chart')}<div class="metric-content"><div class="metric-label">Priemer známok</div><div class="term-values"><strong>${esc(textState(this._hass, student.entities?.term_first))}<small>1. polrok</small></strong><strong>${esc(textState(this._hass, student.entities?.term_second))}<small>2. polrok</small></strong></div></div></div></div></article>`;
+      <div class="extras">${this.metric(student, 'timetable_changes', 'Suplovanie / zmeny', 'swap')}${this.metric(student, 'next_ringing', 'Najbližšie zvonenie', 'clock')}${this.metric(student, 'missing_teachers', 'Chýbajúci učitelia', 'people')}${this.attendance(student)}<div class="metric">${icon('chart')}<div class="metric-content"><div class="metric-label">Priemer známok</div><div class="term-values"><strong>${esc(textState(this._hass, student.entities?.term_first))}<small>1. polrok</small></strong><strong>${esc(textState(this._hass, student.entities?.term_second))}<small>2. polrok</small></strong></div></div></div></div></article>`;
   }
 
   render() {
@@ -497,7 +567,7 @@ class EduPageSchoolBoardPanel extends HTMLElement {
     const failed = this._error || Object.values(this._calendarErrors).some(Boolean) || Object.values(this._todoErrors).some(Boolean);
     const status = busy ? 'Načítavam údaje…' : failed ? 'Niektoré údaje sa nenačítali' : cache.mappingAt ? `Načítané ${fmtTime(cache.mappingAt, this._timeZone || 'UTC')}` : '';
     const content = this._students.length ? this._students.map((student) => this.studentCard(student)).join('') : `<div class="board-notice" role="status">${this._error ? esc(this._error) : this._mappingLoading ? '<i class="spinner"></i>Načítavam účty EduPage…' : 'Nie je načítaný žiadny účet EduPage. Skontrolujte integráciu v Nastaveniach → Zariadenia a služby.'}</div>`;
-    this.shadowRoot.innerHTML = `<style>${STYLES}</style><header class="topbar"><div class="page-title">${this._narrow ? `<button class="icon-button" data-action="menu" aria-label="Otvoriť navigáciu Home Assistanta">${icon('menu')}</button>` : ''}<h1>Školská nástenka</h1></div><div class="top-actions"><div class="top-meta"><time>${esc(fmtDate(new Date(), this._timeZone || 'UTC', { weekday: 'long', day: 'numeric', month: 'long' }))}</time><span role="status">${esc(status)}</span></div><button class="icon-button ${busy ? 'busy' : ''}" data-action="refresh" aria-label="Obnoviť údaje" title="Obnoviť údaje" ${busy ? 'disabled' : ''}>${icon('refresh')}</button></div></header><main class="board ${this._students.length === 1 ? 'single' : ''}">${this._error && this._students.length ? `<div class="board-notice error">${esc(this._error)}</div>` : ''}${content}</main>`;
+    this.shadowRoot.innerHTML = `<style>${STYLES}</style><header class="topbar"><div class="page-title">${this._narrow ? `<button class="icon-button" data-action="menu" aria-label="Otvoriť navigáciu Home Assistanta">${icon('menu')}</button>` : ''}<h1>Školská nástenka</h1></div><div class="top-actions"><div class="top-meta"><time>${esc(fmtDate(new Date(), this._timeZone || 'UTC', { weekday: 'long', day: 'numeric', month: 'long' }))}</time><span role="status">${esc(status)}</span></div><button class="icon-button menu-button" data-action="canteen" aria-label="Otvoriť jedálny lístok" title="Jedálny lístok">${icon('food')}<span>Jedálny lístok</span></button><button class="icon-button ${busy ? 'busy' : ''}" data-action="refresh" aria-label="Obnoviť údaje" title="Obnoviť údaje" ${busy ? 'disabled' : ''}>${icon('refresh')}</button></div></header><main class="board ${this._students.length === 1 ? 'single' : ''}">${this._error && this._students.length ? `<div class="board-notice error">${esc(this._error)}</div>` : ''}${content}</main>${this.canteenModal()}`;
     this.shadowRoot.querySelectorAll('details').forEach((detail) => {
       detail.open = open.has(detail.dataset.section);
       if (focusedSection === detail.dataset.section) detail.querySelector('summary')?.focus({ preventScroll: true });
@@ -505,6 +575,10 @@ class EduPageSchoolBoardPanel extends HTMLElement {
     this.shadowRoot.querySelectorAll('[data-scroll-key]').forEach((element) => { element.scrollLeft = scrolls.get(element.dataset.scrollKey) || 0; });
     if (focusedAction) this.shadowRoot.querySelector(`[data-action="${focusedAction}"]`)?.focus({ preventScroll: true });
     this.shadowRoot.querySelector('[data-action="refresh"]')?.addEventListener('click', () => this.load(true));
+    this.shadowRoot.querySelector('[data-action="canteen"]')?.addEventListener('click', () => { this._menuOpen = true; this.render(); this.loadCanteen(); });
+    this.shadowRoot.querySelectorAll('[data-action="close-menu"]').forEach((element) => element.addEventListener('click', (event) => {
+      if (event.target === element || element.tagName === 'BUTTON') { this._menuOpen = false; this.render(); }
+    }));
     this.shadowRoot.querySelector('[data-action="menu"]')?.addEventListener('click', () => this.dispatchEvent(new CustomEvent('hass-toggle-menu', { bubbles: true, composed: true })));
   }
 }

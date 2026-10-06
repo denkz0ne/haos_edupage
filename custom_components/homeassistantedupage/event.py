@@ -22,6 +22,7 @@ EVENT_NEW_MESSAGE = "new_message"
 EVENT_NEW_EXAM = "new_exam"
 EVENT_TIMETABLE_CHANGE = "timetable_change"
 EVENT_ARRIVAL_AT_SCHOOL = "arrival_at_school"
+EVENT_DEPARTURE_FROM_SCHOOL = "departure_from_school"
 EVENT_EDUPAGE = f"{DOMAIN}_event"
 
 EVENT_TYPES = [
@@ -31,6 +32,7 @@ EVENT_TYPES = [
     EVENT_NEW_EXAM,
     EVENT_TIMETABLE_CHANGE,
     EVENT_ARRIVAL_AT_SCHOOL,
+    EVENT_DEPARTURE_FROM_SCHOOL,
 ]
 
 _TYPE_MAP = {
@@ -48,8 +50,15 @@ _TYPE_MAP = {
     "changeroom": EVENT_TIMETABLE_CHANGE,
     "bookroom": EVENT_TIMETABLE_CHANGE,
     "timetable": EVENT_TIMETABLE_CHANGE,
-    "pipnutie": EVENT_ARRIVAL_AT_SCHOOL,
 }
+
+
+def _attendance_event_type(event: Any) -> str:
+    """Map EduPage check-in records to distinct arrival/departure types."""
+    text = str(getattr(event, "text", "") or "").strip().casefold()
+    if text.startswith("odchod"):
+        return EVENT_DEPARTURE_FROM_SCHOOL
+    return EVENT_ARRIVAL_AT_SCHOOL
 
 
 async def async_setup_entry(
@@ -187,7 +196,11 @@ class EduPageEventEntity(CoordinatorEntity, EventEntity):
             if event_id is None or event_id in self._known_event_ids:
                 continue
             raw_type = _event_type_value(event)
-            mapped_type = _TYPE_MAP.get(raw_type)
+            mapped_type = (
+                _attendance_event_type(event)
+                if raw_type == "pipnutie"
+                else _TYPE_MAP.get(raw_type)
+            )
             if mapped_type is not None:
                 attributes = self._event_attributes(event, raw_type)
                 self._trigger_event(

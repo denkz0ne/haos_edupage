@@ -8,5 +8,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/denkz0ne/haos_edupage/issues",
   "requirements": ["edupage-api==0.13.1", "unidecode"],
-  "version": "2026.10.3"
+  "version": "2026.10.4"
 }
