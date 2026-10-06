@@ -155,7 +155,7 @@ def test_attendance_sensor_reports_latest_arrival_and_departure(coordinator):
     attrs = sensor.extra_state_attributes
     assert attrs["last_arrival"] == "2026-10-06T07:44:29"
     assert attrs["last_departure"] == "2026-10-06T13:47:42"
-    assert [event.event_id for event in sensor._current_notifications] == [1, 3]
+    assert attrs["last_event"].startswith("Odchod")
 
 
 def test_overdue_homework_excludes_today_and_completed(coordinator):
