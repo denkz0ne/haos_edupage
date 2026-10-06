@@ -136,6 +136,9 @@ test('timetable columns belong to each pupil; double lessons span both periods',
   assert.match(tableA, /<tr class="today">/);
   panel._events['calendar.a'].push(lesson('06', '12', '00', 45, 'VLA'));
   assert.match(panel.schedule(student('a')), />VLA</);
+  panel._events['calendar.a_tasks'] = [lesson('06', '12', '00', 45, '[DÚ] Matematika')];
+  assert.match(panel.schedule(student('a')), /class="tag amber homework">DÚ<\/span>/);
+  assert.match(source, /\.tag\.homework\{font-size:12px/);
 });
 
 test('message title never hides the complete body, and user content is escaped', () => {

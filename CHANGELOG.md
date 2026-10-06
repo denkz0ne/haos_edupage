@@ -2,6 +2,10 @@
 
 Verzie tohto forku používajú formát `YYYY.MM.N`, kde `N` je poradové číslo vydania v danom mesiaci. Každá používateľsky viditeľná aktualizácia má zvýšiť verziu v `manifest.json` a pridať krátky záznam sem.
 
+## 2026.10.5
+
+- Označenie DÚ priamo v bunke rozvrhu je väčšie a ľahšie čitateľné.
+
 ## 2026.10.4
 
 - Dnešný riadok rozvrhu je jemne modrý, aktuálna hodina výraznejšia a nasledujúca nemá osobitné označenie; správy sa pred rozbalením zobrazia najviac v počte 10.
