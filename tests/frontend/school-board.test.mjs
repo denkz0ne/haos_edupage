@@ -133,6 +133,17 @@ test('timetable columns belong to each pupil; double lessons span both periods',
   assert.match(tableA, />SJL</);
   assert.match(tableA, /title="Slovenský jazyk a literatúra"/);
   assert.match(tableA, /scope="row"/);
+  assert.match(tableA, /<tr class="today">/);
+  const substitutedLesson = lesson('06', '12', '00', 45, 'VLA');
+  substitutedLesson.description = 'Suplovanie: Mgr. Nová zastupuje\nSpráva suplovania: Mgr. Nová zastupuje';
+  panel._events['calendar.a'].push(substitutedLesson);
+  assert.match(panel.schedule(student('a')), />VLA</);
+  assert.match(panel.schedule(student('a')), /title="Suplovanie: Mgr\. Nová zastupuje/);
+  assert.match(panel.schedule(student('a')), />SUPL<\/span>/);
+  panel._events['calendar.a_tasks'] = [lesson('06', '12', '00', 45, '[DÚ] VLA: Prečítať text')];
+  assert.match(panel.schedule(student('a')), /class="tag amber homework" title="\[DÚ\] VLA: Prečítať text">DÚ<\/span>/);
+  assert.match(panel.schedule(student('a')), /title="\[DÚ\] VLA: Prečítať text"/);
+  assert.match(source, /\.tag\.homework,\.tag\.substitution\{font-size:12px/);
 });
 
 test('message title never hides the complete body, and user content is escaped', () => {
@@ -168,6 +179,50 @@ test('messages sort by actual time newest first, with stable IDs and undated ite
   assert.ok(html.indexOf('ID2') < html.indexOf('ID4'));
   assert.ok(html.indexOf('ID4') < html.indexOf('ID1'));
   assert.ok(html.indexOf('ID1') < html.indexOf('ID3'));
+});
+
+test('messages show the newest ten first and expand older items in order', () => {
+  const Panel = createEnvironment();
+  const panel = new Panel();
+  panel._hass = {
+    config: { time_zone: 'Europe/Bratislava' },
+    states: { 'sensor.a_messages': { attributes: { events: Array.from({ length: 12 }, (_, index) => ({
+      id: 12 - index, timestamp: `2026-10-06T${String(19 - index).padStart(2, '0')}:00:00+02:00`,
+      text: `Správa ${index + 1}`, type: 'sprava',
+    })) } } },
+  };
+
+  const html = panel.messages(student('a'));
+  assert.ok(html.indexOf('Správa 1') < html.indexOf('Správa 10'));
+  assert.match(html, /Ďalšie položky \(2\)/);
+  assert.ok(html.indexOf('Správa 10') < html.indexOf('Správa 11'));
+  assert.ok(html.indexOf('Správa 11') < html.indexOf('Správa 12'));
+});
+
+test('canteen menu is loaded only when the top-bar link is activated', async () => {
+  const Panel = createEnvironment();
+  const panel = new Panel();
+  let menuCalls = 0;
+  const canteen = { ...student('a'), entities: { ...student('a').entities, canteen: 'calendar.canteen' } };
+  panel._hass = {
+    config: { time_zone: 'Europe/Bratislava' }, connection: {}, states: {},
+    callWS: async (message) => {
+      if (message.domain === 'calendar' && message.target.entity_id === 'calendar.canteen') {
+        menuCalls++;
+        return response('calendar.canteen', [{ start: '2026-10-06T00:00:00+02:00', summary: 'Obed', description: 'Paradajková polievka' }]);
+      }
+      return { response: { [message.target.entity_id]: { events: [] } } };
+    },
+  };
+  panel._students = [canteen];
+
+  assert.equal(menuCalls, 0);
+  panel._menuOpen = true;
+  await panel.loadCanteen();
+  const html = panel.canteenModal();
+  assert.equal(menuCalls, 1);
+  assert.match(html, /Jedálny lístok/);
+  assert.match(html, /Paradajková polievka/);
 });
 
 test('unrelated HA state changes cause no render and no extra data requests', async () => {

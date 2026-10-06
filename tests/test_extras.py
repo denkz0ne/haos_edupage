@@ -302,6 +302,20 @@ async def test_collect_data_resolves_student_class_names():
     }
 
 
+async def test_collect_data_recovers_class_from_child_timetable():
+    """A matching class ID in the child's own schedule restores safe filtering."""
+    edupage = _edupage_with_grades_failing()
+    edupage.get_classes = AsyncMock(return_value=[])
+    target_class = SimpleNamespace(class_id=7, short="1.B", name="Prvá B")
+    edupage.get_timetable = AsyncMock(
+        return_value=[SimpleNamespace(is_cancelled=False, classes=[target_class])]
+    )
+
+    data = await _collect_data(edupage, _StudentWithClass(), "Max")
+
+    assert data["student"]["class_names"] == ["1.B", "Prvá B"]
+
+
 async def test_collect_data_continues_when_get_subjects_fails():
     edupage = _edupage_with_grades_failing()
     edupage.get_grades = AsyncMock(return_value=[])

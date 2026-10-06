@@ -2,6 +2,18 @@
 
 Verzie tohto forku používajú formát `YYYY.MM.N`, kde `N` je poradové číslo vydania v danom mesiaci. Každá používateľsky viditeľná aktualizácia má zvýšiť verziu v `manifest.json` a pridať krátky záznam sem.
 
+## 2026.10.5
+
+- Označenia DÚ a SUPL priamo v bunke rozvrhu sú väčšie a majú tooltip s textom úlohy, správou o suplovaní a menom učiteľa z rozvrhu.
+- Suplovanie sa páruje s hodinou podľa dátumu, čísla hodiny a triedy z API EduPage.
+
+## 2026.10.4
+
+- Dnešný riadok rozvrhu je jemne modrý, aktuálna hodina výraznejšia a nasledujúca nemá osobitné označenie; správy sa pred rozbalením zobrazia najviac v počte 10.
+- Skratka predmetu sa preberá z poľa `short` v EduPage API (napr. VLA); popis hodiny obsahuje API triedy a skupiny.
+- Trieda dieťaťa sa pri chýbajúcom výsledku `get_classes()` doplní z jeho rozvrhu. Triedne správy a úlohy bez potvrdenej zhody triedy sa nezdieľajú medzi deťmi.
+- Pridaný senzor dochádzky so stavom a posledným príchodom/odchodom; udalosti rozlišujú oba smery.
+
 ## 2026.10.3
 
 - Opravené obnovenie uloženej EduPage relácie po aktualizácii `edupage-api` 0.13.1: knižnica presunula `reload_data()` z `Login` do `LoginSession`.
