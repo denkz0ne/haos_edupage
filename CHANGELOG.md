@@ -2,6 +2,14 @@
 
 Verzie tohto forku používajú formát `YYYY.MM.N`, kde `N` je poradové číslo vydania v danom mesiaci. Každá používateľsky viditeľná aktualizácia má zvýšiť verziu v `manifest.json` a pridať krátky záznam sem.
 
+## 2026.10.1
+
+- Prepracované zobrazenie podľa mocku: jedna stránka bez vnútornej navigácie a uvítacieho bloku, väčšie písmo, kompaktné sekcie a neutrálny rozvrh.
+- Správy zobrazujú celé znenie aj pri samostatnom nadpise; ďalšie správy, úlohy a známky sa rozbaľujú priamo na stránke.
+- Hlavičky, správy a známky sa zobrazia hneď. Rozvrhy a úlohy sa dopĺňajú nezávisle pre každé dieťa, pri opakovanom otvorení sa využijú už načítané údaje.
+- Opravená mriežka pre rozdielne časy zvonenia a dvojhodinovky, prázdny rozvrh má jasné vysvetlenie. Odstránené zobrazenie `undefined` pri priemeroch.
+- Zvýšená verzia frontendového súboru pre obnovenie cache po aktualizácii.
+
 ## 2026.10.0
 
 - Pridaný vlastný natívny EduPage panel v sidebare Home Assistanta podľa návrhu rodinnej nástenky.

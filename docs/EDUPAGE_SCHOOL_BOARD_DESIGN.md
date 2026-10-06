@@ -4,6 +4,16 @@ Návrh vlastného natívneho Home Assistant custom panelu v bočnej navigácii a
 
 Primárny scenár je široký desktop/tablet sidepanel s dvoma deťmi. Ľavá polovica obrazovky patrí prvému dieťaťu, pravá polovica druhému. Obe strany majú rovnakú informačnú štruktúru, ale vlastný stav a vlastné zvýraznenia.
 
+## Upresnenie po vizuálnej kontrole (2026.10.1)
+
+- Home Assistant poskytuje svoju vlastnú navigáciu. Panel nevytvára druhý bočný pás, mobilnú spodnú navigáciu ani samostatné pohľady Škola/Úlohy/Známky.
+- Všetky sekcie sú na jednej stránke; odstránené je uvítanie a ozdobné medzihlavičky. Ďalšie položky sa rozbaľujú inline.
+- Mená majú 24 px, nadpisy sekcií 17 px, predmety v rozvrhu 16 px a správy 14 px. Štandardné skratky predmetov šetria miesto, úplný názov aj údaje hodiny sú v titulku bunky.
+- Menšie medzery, rovnaké neutrálne bunky a jemné ružové/modré pozadie označujú žiakov. Farba bunky označuje aktuálnu hodinu, stavové markery zostávajú malé.
+- Každý žiak má vlastnú mriežku časov zvonenia; dvojhodinovky môžu zaberať viac stĺpcov. Hodiny s podobným začiatkom sa zlúčia do jedného stĺpca.
+- Hlavičky, správy a známky nečakajú na kalendár ani todo. Každý dátový zdroj má vlastný stav načítania a chybu. Cache je iba v pamäti aktuálneho autentifikovaného spojenia, na 15 minút; tlačidlo obnovenia údaje načíta znova.
+- Reprodukovateľný vizuálny náhľad s vymyslenými údajmi: `tests/frontend/school-board-preview.html` (scenáre `slow`, `empty`, `error` a motív `theme=dark`).
+
 ## 1. Základný layout
 
 Dashboard je dvojstĺpcový: **ľavá polovica = dieťa A, pravá polovica = dieťa B**. Obe polovice používajú rovnakú komponentovú štruktúru a líšia sa iba dátami a jemným orientačným akcentom.

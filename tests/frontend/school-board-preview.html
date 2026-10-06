@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EduPage – náhľad so vzorovými údajmi</title>
+<style>
+body{margin:0;--primary-background-color:#f6f8fb;--card-background-color:#fff;--primary-text-color:#182334;--secondary-text-color:#697589;--divider-color:#e1e6ef;--primary-color:#168bce}
+body.dark{--primary-background-color:#10161f;--card-background-color:#1c2634;--primary-text-color:#e7edf4;--secondary-text-color:#a8b3c3;--divider-color:#344256;--primary-color:#57b4ea}
+</style>
+<script>
+const scenario = new URLSearchParams(location.search).get('scenario') || 'normal';
+const NativeDate = Date;
+const demoTime = NativeDate.parse('2026-10-08T08:05:00Z');
+window.Date = class extends NativeDate {
+  constructor(...args) { super(...(args.length ? args : [demoTime])); }
+  static now() { return demoTime; }
+};
+</script>
+<script src="../../custom_components/homeassistantedupage/www/edupage-school-board-panel.js"></script>
+</head>
+<body>
+<edupage-school-board-panel></edupage-school-board-panel>
+<script>
+if (new URLSearchParams(location.search).get('theme') === 'dark') document.body.className = 'dark';
+const schoolSubjects = ['Slovenský jazyk', 'Matematika', 'Anglický jazyk', 'Prírodoveda', 'Informatika', 'Telesná výchova', 'Hudobná výchova'];
+const makeStudent = (key, name, className) => ({
+  key, name, class_names: [className], school_domain: 'zsbieloruska.edupage.sk',
+  entities: {
+    timetable: `calendar.${key}`, assignments: `calendar.${key}_assignments`,
+    todo: `todo.${key}`, notifications: `sensor.${key}_messages`,
+    open_homework: `sensor.${key}_homework`, upcoming_exams: `sensor.${key}_exams`,
+    timetable_changes: `sensor.${key}_changes`, next_ringing: `sensor.${key}_ringing`,
+    missing_teachers: `sensor.${key}_teachers`, term_first: `sensor.${key}_first`, term_second: `sensor.${key}_second`,
+    subjects: schoolSubjects.map((name, i) => ({ name, entity_id: `sensor.${key}_subject_${i}` })),
+  },
+});
+const students = [makeStudent('a', 'Emka', '5.A'), makeStudent('b', 'Tomáš', '8.B')];
+const states = {};
+students.forEach((student, index) => {
+  const entities = student.entities;
+  ['homework', 'exams', 'changes', 'teachers'].forEach((key, i) => {
+    states[`sensor.${student.key}_${key}`] = { state: String([3 - index, 1, 1, index][i]), attributes: {} };
+  });
+  states[entities.next_ringing] = { state: '10:35', attributes: {} };
+  states[entities.term_first] = { state: index ? '2.31' : '1.42', attributes: {} };
+  states[entities.term_second] = { state: index ? '2.14' : '1.36', attributes: {} };
+  const messages = index ? [
+    { author: 'Mgr. Hanáková', title: 'Projekt z fyziky', text: 'Zadanie na projekt z fyziky nájdete v prílohe. Pripravte si aj krátku prezentáciu výsledkov.', timestamp: '2026-10-08T08:12:00+02:00', type: 'sprava' },
+    { author: 'Mgr. Vargová', text: 'Zmena učiteľa na 5. hodine – informatiku dnes odučí Mgr. Kováč.', timestamp: '2026-10-07T13:10:00+02:00', type: 'sprava' },
+    { author: 'Triedny učiteľ', text: 'Prosím priniesť podpísaný súhlas na školský výlet.', timestamp: '2026-10-06T12:10:00+02:00', type: 'sprava' },
+  ] : [
+    { author: 'Mgr. Nováková', text: 'Pripomienka: zajtra je písomka z matematiky. Nezabudnite si pomôcky.', timestamp: '2026-10-08T10:24:00+02:00', type: 'sprava' },
+    { author: 'Mgr. Bieliková', text: 'Exkurzia do planetária – prosím o vyplnenie súhlasu v EduPage. Odchod je o 8:00 od školy.', timestamp: '2026-10-07T14:35:00+02:00', type: 'sprava' },
+    { author: 'Triedny učiteľ', text: 'Aktualizovaný rozvrh od budúceho týždňa (zmena v piatok).', timestamp: '2026-10-06T16:20:00+02:00', type: 'sprava' },
+  ];
+  states[entities.notifications] = { state: '3', attributes: { events: messages } };
+  entities.subjects.forEach(({ entity_id }, i) => {
+    states[entity_id] = { state: '1.5', attributes: { latest_grade: [5, 1, 2, 2, 1, 3, 1][i], latest_grade_date: `2026-10-${String(8 - i).padStart(2, '0')}T08:00:00+02:00`, latest_grade_title: i === 0 ? 'Písomná práca' : '' } };
+  });
+});
+const makeLessons = (key) => {
+  const starts = ['08:00', '08:55', '09:50', '10:55', '11:50', '12:45', '13:35'];
+  const titles = key === 'a'
+    ? [['Slovenský jazyk','Matematika','Anglický jazyk','Prírodoveda','Informatika','Telesná výchova'],
+       ['Matematika','Anglický jazyk','Dejepis','Geografia','Slovenský jazyk','Výtvarná výchova'],
+       ['Prírodoveda','Matematika','Slovenský jazyk','Anglický jazyk','Informatika','Telesná výchova'],
+       ['Slovenský jazyk','Matematika','Anglický jazyk','Geografia','Chémia','Nemecký jazyk'],
+       ['Matematika','Slovenský jazyk','Dejepis','Anglický jazyk','Informatika','Telesná výchova']]
+    : [['Anglický jazyk','Matematika','Fyzika','Chémia','Dejepis','Telesná výchova'],
+       ['Matematika','Slovenský jazyk','Anglický jazyk','Fyzika','Informatika','Geografia'],
+       ['Chémia','Matematika','Dejepis','Anglický jazyk','Slovenský jazyk','Telesná výchova'],
+       ['Matematika','Fyzika','Chémia','Informatika','Dejepis','Geografia'],
+       ['Slovenský jazyk','Matematika','Anglický jazyk','Fyzika','Občianska náuka','Telesná výchova']];
+  const events = [];
+  for (let day = 0; day < 5; day++) {
+    titles[day].forEach((title, i) => {
+      const start = new Date(`2026-10-${String(5 + day).padStart(2,'0')}T${starts[i]}:00+02:00`);
+      events.push({ summary: title, start: start.toISOString(), end: new Date(start.getTime() + 45*60000).toISOString(), location: i === 5 ? 'Tel.' : `${['A','B','C'][i % 3]}${(i % 3)+1}`, description: 'Vyučujúci: Vzorový učiteľ' });
+    });
+  }
+  return events;
+};
+const events = {
+  'calendar.a': makeLessons('a'), 'calendar.b': scenario === 'empty' ? [] : makeLessons('b'),
+  'calendar.a_assignments': [{ summary: '[Písomka] Anglický jazyk: slovíčka', start: '2026-10-09', end: '2026-10-10' }],
+  'calendar.b_assignments': [{ summary: '[DÚ] Fyzika: príprava', start: '2026-10-05', end: '2026-10-06' }],
+};
+const homework = {
+  'todo.a': [
+    { summary: 'Matematika: Domáca úloha – str. 42/3, 4', due: '2026-10-08', status: 'needs_action' },
+    { summary: 'Slovenský jazyk: Referát – literárna postava', due: '2026-10-09', status: 'needs_action' },
+    { summary: 'Anglický jazyk: Workbook str. 56–58', due: '2026-10-12', status: 'needs_action' },
+    { summary: 'Prírodoveda: Pripraviť si rastlinu na projekt', due: '2026-10-06', status: 'completed' },
+    { summary: 'Výtvarná výchova: Priniesť výkres a farby', due: '2026-10-13', status: 'needs_action' },
+  ],
+  'todo.b': [
+    { summary: 'Fyzika: Príprava na písomku – kapitola 4', due: '2026-10-07', status: 'needs_action' },
+    { summary: 'Matematika: Online test – geometria', due: '2026-10-09', status: 'needs_action' },
+    { summary: 'Chémia: Laboratórny protokol', due: '2026-10-10', status: 'needs_action' },
+    { summary: 'Dejepis: Prezentácia – 2. svetová vojna', due: '2026-10-06', status: 'completed' },
+  ],
+};
+window.previewCalls = [];
+const hass = {
+  config: { time_zone: 'Europe/Bratislava' }, connection: {}, states,
+  callWS: (message) => {
+    previewCalls.push({ type: message.type, service: message.service, id: message.target?.entity_id });
+    if (message.type === 'homeassistantedupage/panel') return Promise.resolve({ students });
+    const id = message.target.entity_id;
+    const data = message.domain === 'todo' ? { items: homework[id] || [] } : { events: events[id] || [] };
+    const delay = scenario === 'slow' && (id === 'calendar.a' || id === 'todo.a') ? 9000 : 20;
+    return new Promise((resolve, reject) => setTimeout(() => (
+      scenario === 'error' && id === 'calendar.a' ? reject(new Error('Rozvrh sa nepodarilo načítať.')) : resolve({ response: { [id]: data } })
+    ), delay));
+  },
+};
+window.previewHass = hass;
+document.querySelector('edupage-school-board-panel').hass = hass;
+document.querySelector('edupage-school-board-panel').narrow = innerWidth < 980;
+</script>
+</body>
+</html>
+
