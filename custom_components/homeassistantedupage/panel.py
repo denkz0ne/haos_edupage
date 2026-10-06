@@ -137,7 +137,7 @@ def _register_websocket(hass: Any) -> None:
 async def async_setup_panel(hass: Any) -> None:
     """Register frontend assets and the sidebar item once an entry is loaded."""
 
-    if not hasattr(hass, "http"):
+    if not getattr(hass, "http", None):
         return
     data = hass.data.setdefault(_PANEL_DATA_KEY, {})
     lock = data.setdefault("lock", asyncio.Lock())
