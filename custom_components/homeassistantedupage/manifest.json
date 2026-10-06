@@ -3,7 +3,7 @@
   "name": "EduPage pre Home Assistant",
   "codeowners": ["@denkz0ne"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["http"],
   "documentation": "https://github.com/denkz0ne/haos_edupage",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/denkz0ne/haos_edupage/issues",
