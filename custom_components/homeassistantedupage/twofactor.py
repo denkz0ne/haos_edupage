@@ -13,7 +13,7 @@ ever shown.
 This module is a self-contained driver for that challenge, so the config flow
 keeps its existing "enter the confirmation code" page. It reuses
 `edupage-api` for the JSON-RPC wire format (`RequestData`) and for reloading the
-resulting session (`Login.reload_data`), so the library is never patched.
+resulting session (`LoginSession.reload_data`), so the library is never patched.
 """
 
 import json
@@ -21,7 +21,7 @@ import logging
 
 from urllib.parse import urljoin
 
-from edupage_api import Login
+from edupage_api import LoginSession
 from edupage_api.compression import RequestData
 from edupage_api.exceptions import (
     BadCredentialsException,
@@ -93,7 +93,7 @@ class EdupageTwoFactor:
                 "Second factor did not yield a session (no PHPSESSID)."
             )
 
-        Login(self.api).reload_data(
+        LoginSession(self.api).reload_data(
             self.api.subdomain, phpsess, self.api.username
         )
 

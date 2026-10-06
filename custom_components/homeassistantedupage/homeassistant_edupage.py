@@ -1,7 +1,7 @@
 import logging
 
 from edupage_api import Edupage as APIEdupage
-from edupage_api import Login
+from edupage_api import LoginSession
 from edupage_api.exceptions import BadCredentialsException, NotParentException
 
 from homeassistant.helpers.update_coordinator import UpdateFailed
@@ -22,7 +22,7 @@ class Edupage:
     """Async wrapper around the edupage-api library.
 
     Runtime polling is deliberately session-only: a fresh PHPSESSID obtained
-    during the config flow (after 2FA) is reused via `Login.reload_data`.
+    during the config flow (after 2FA) is reused via `LoginSession.reload_data`.
     We never call `api.login()` at runtime so a 2FA prompt is never re-triggered
     by the 30-minute coordinator poll. If the stored session turns out to be
     expired we signal that with EdupageSessionExpired so the integration can
@@ -36,8 +36,7 @@ class Edupage:
 
     def _load_session(self, subdomain, sessionid, username):
         """Reload a stored EduPage session synchronously."""
-        login = Login(self.api)
-        login.reload_data(subdomain, sessionid, username)
+        LoginSession(self.api).reload_data(subdomain, sessionid, username)
 
     async def login(self, username, subdomain, sessionid):
         """Load the stored session. Never starts username/password login."""
@@ -72,7 +71,7 @@ class Edupage:
                 "integration to refresh it."
             ) from e
         except IndexError as e:
-            # Login.reload_data() raises IndexError on a real installation when
+            # LoginSession.reload_data() raises IndexError on a real installation when
             # the stored session is expired (homeassistantedupage#70). Treat it
             # as an expired session so the reauthentication flow starts again.
             _LOGGER.error(

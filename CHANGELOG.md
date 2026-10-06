@@ -2,6 +2,11 @@
 
 Verzie tohto forku používajú formát `YYYY.MM.N`, kde `N` je poradové číslo vydania v danom mesiaci. Každá používateľsky viditeľná aktualizácia má zvýšiť verziu v `manifest.json` a pridať krátky záznam sem.
 
+## 2026.10.3
+
+- Opravené obnovenie uloženej EduPage relácie po aktualizácii `edupage-api` 0.13.1: knižnica presunula `reload_data()` z `Login` do `LoginSession`.
+- Rovnaká oprava sa používa po dokončení dvojfaktorového prihlásenia.
+
 ## 2026.10.2
 
 - Aktualizovaná knižnica `edupage-api` na 0.13.1 vrátane opráv detského kontextu, nových typov udalostí a prázdneho jedálneho lístka.
