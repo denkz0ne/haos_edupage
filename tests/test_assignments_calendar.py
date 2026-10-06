@@ -137,6 +137,45 @@ def test_timetable_event_falls_back_to_api_subject_name_when_short_missing(hass)
     assert event.summary == "Vlastiveda"
 
 
+def test_timetable_event_includes_matched_substitution_details(hass):
+    """A class and period matched API substitution is available to the panel."""
+    coordinator = DataUpdateCoordinator(
+        hass,
+        logging.getLogger("test"),
+        name="test",
+        config_entry=None,
+    )
+    coordinator.data = {
+        "student": {"id": 1, "name": "Max Example", "class_names": ["1.B"]},
+        "timetable_change_date": date(2026, 10, 6),
+        "timetable_changes": [
+            SimpleNamespace(
+                change_class="1.B",
+                lesson_n=4,
+                title="Mgr. Nová zastupuje",
+            )
+        ],
+    }
+    entity = EdupageCalendar(coordinator, {})
+    entity.hass = hass
+    lesson = SimpleNamespace(
+        period=4,
+        teachers=[SimpleNamespace(name="Mgr. Nová")],
+        classes=[SimpleNamespace(short="1.B", name="1.B")],
+        groups=[],
+        classrooms=[],
+        start_time=time(10, 55),
+        end_time=time(11, 40),
+        subject=SimpleNamespace(short="MAT", name="Matematika"),
+        is_cancelled=False,
+    )
+
+    event = entity.map_lesson_to_calender_event(lesson, date(2026, 10, 6))
+
+    assert "Suplovanie: Mgr. Nová zastupuje" in event.description
+    assert "Učiteľ/ka podľa rozvrhu: Mgr. Nová" in event.description
+
+
 def test_homework_maps_to_all_day_calendar_event(assignments_calendar):
     """Homework becomes an all-day event containing its metadata."""
     event = assignments_calendar._map_notification(_notification(1))

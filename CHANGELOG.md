@@ -4,7 +4,8 @@ Verzie tohto forku používajú formát `YYYY.MM.N`, kde `N` je poradové čísl
 
 ## 2026.10.5
 
-- Označenie DÚ priamo v bunke rozvrhu je väčšie a ľahšie čitateľné.
+- Označenia DÚ a SUPL priamo v bunke rozvrhu sú väčšie a majú tooltip s textom úlohy, správou o suplovaní a menom učiteľa z rozvrhu.
+- Suplovanie sa páruje s hodinou podľa dátumu, čísla hodiny a triedy z API EduPage.
 
 ## 2026.10.4
 

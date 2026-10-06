@@ -136,6 +136,13 @@ class EdupageCalendar(CoordinatorEntity, CalendarEntity):
         if lesson.classrooms:
             room = lesson.classrooms[0].name
             description += f"\nUčebňa: {room}"
+        substitution = self._substitution_for_lesson(lesson, day)
+        if substitution is not None:
+            substitute_title = str(getattr(substitution, "title", "") or "").strip()
+            if substitute_title:
+                description += f"\nSuplovanie: {substitute_title}"
+            if teacher_names:
+                description += f"\nUčiteľ/ka podľa rozvrhu: {', '.join(teacher_names)}"
         local_tz = ZoneInfo(self.hass.config.time_zone)
         start_time = datetime.combine(day, lesson.start_time).astimezone(local_tz)
         end_time = datetime.combine(day, lesson.end_time).astimezone(local_tz)
@@ -155,6 +162,45 @@ class EdupageCalendar(CoordinatorEntity, CalendarEntity):
             location=room,
         )
         return cal_event
+
+    def _substitution_for_lesson(self, lesson: Lesson, day: date):
+        """Return the API substitution matching this class, date, and period."""
+        data = self.coordinator.data or {}
+        if data.get("timetable_change_date") != day:
+            return None
+
+        period = getattr(lesson, "period", None)
+        if period is None:
+            return None
+
+        def normalize_class(value):
+            return "".join(char for char in str(value or "").casefold() if char.isalnum())
+
+        lesson_classes = {
+            normalize_class(getattr(item, "short", None) or getattr(item, "name", None))
+            for item in (getattr(lesson, "classes", None) or [])
+        }
+        student_classes = {
+            normalize_class(value)
+            for value in data.get("student", {}).get("class_names", [])
+        }
+        for change in data.get("timetable_changes", []) or []:
+            change_class = normalize_class(getattr(change, "change_class", None))
+            if not change_class:
+                continue
+            if lesson_classes and change_class not in lesson_classes:
+                continue
+            if student_classes and change_class not in student_classes:
+                continue
+            change_period = getattr(change, "lesson_n", None)
+            affected_periods = (
+                change_period
+                if isinstance(change_period, (tuple, list))
+                else (change_period,)
+            )
+            if period in affected_periods:
+                return change
+        return None
 
     def find_lesson_now_or_next_across_days(self) -> Optional[CalendarEvent]:
         lessons_by_day = self.coordinator.data.get("timetable", {})

@@ -134,11 +134,16 @@ test('timetable columns belong to each pupil; double lessons span both periods',
   assert.match(tableA, /title="Slovenský jazyk a literatúra"/);
   assert.match(tableA, /scope="row"/);
   assert.match(tableA, /<tr class="today">/);
-  panel._events['calendar.a'].push(lesson('06', '12', '00', 45, 'VLA'));
+  const substitutedLesson = lesson('06', '12', '00', 45, 'VLA');
+  substitutedLesson.description = 'Suplovanie: Mgr. Nová zastupuje\nSpráva suplovania: Mgr. Nová zastupuje';
+  panel._events['calendar.a'].push(substitutedLesson);
   assert.match(panel.schedule(student('a')), />VLA</);
-  panel._events['calendar.a_tasks'] = [lesson('06', '12', '00', 45, '[DÚ] Matematika')];
-  assert.match(panel.schedule(student('a')), /class="tag amber homework">DÚ<\/span>/);
-  assert.match(source, /\.tag\.homework\{font-size:12px/);
+  assert.match(panel.schedule(student('a')), /title="Suplovanie: Mgr\. Nová zastupuje/);
+  assert.match(panel.schedule(student('a')), />SUPL<\/span>/);
+  panel._events['calendar.a_tasks'] = [lesson('06', '12', '00', 45, '[DÚ] VLA: Prečítať text')];
+  assert.match(panel.schedule(student('a')), /class="tag amber homework" title="\[DÚ\] VLA: Prečítať text">DÚ<\/span>/);
+  assert.match(panel.schedule(student('a')), /title="\[DÚ\] VLA: Prečítať text"/);
+  assert.match(source, /\.tag\.homework,\.tag\.substitution\{font-size:12px/);
 });
 
 test('message title never hides the complete body, and user content is escaped', () => {

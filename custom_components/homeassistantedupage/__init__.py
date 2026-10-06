@@ -257,6 +257,7 @@ async def _collect_data(edupage, student, student_name):
         "cancelled_lessons": timetable_data_canceled,
         "notifications": notifications,
         "timetable_changes": timetable_changes,
+        "timetable_change_date": today,
         "missing_teachers": missing_teachers,
         "next_ringing": next_ringing,
         "school_year": school_year,
