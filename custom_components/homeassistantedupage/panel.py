@@ -15,7 +15,7 @@ from .const import CONF_STUDENT_NAME, CONF_SUBDOMAIN, DOMAIN
 
 PANEL_URL = "edupage-school"
 PANEL_JS = "/homeassistantedupage/edupage-school-board-panel.js"
-PANEL_JS_VERSION = "2026.10.1"
+PANEL_JS_VERSION = "2026.10.2"
 _PANEL_DATA_KEY = "homeassistantedupage_school_board_panel"
 
 _PANEL_DATA_SCHEMA = {

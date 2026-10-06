@@ -12,7 +12,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .assignment_helpers import event_recipient
+from .assignment_helpers import event_matches_student, event_recipient
 from .const import CONF_STUDENT_ID, CONF_STUDENT_NAME, DOMAIN
 from .entity_helpers import compact_entity_name, student_device_info
 
@@ -115,7 +115,18 @@ class EduPageEventEntity(CoordinatorEntity, EventEntity):
         """Return current timeline notifications."""
         if not self.coordinator.data:
             return []
-        return self.coordinator.data.get("notifications", []) or []
+        student = self.coordinator.data.get("student", {})
+        class_names = student.get("class_names", [])
+        return [
+            event
+            for event in self.coordinator.data.get("notifications", []) or []
+            if event_matches_student(
+                event,
+                self._student_id,
+                self._student_name,
+                class_names,
+            )
+        ]
 
     def _notification_ids(self) -> set[int]:
         """Return valid event IDs from the current coordinator data."""

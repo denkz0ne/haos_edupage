@@ -12,6 +12,7 @@ homeassistantedupage#70 / #95:
 from unittest.mock import MagicMock, patch
 
 import pytest
+from edupage_api.exceptions import NotParentException
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from custom_components.homeassistantedupage.homeassistant_edupage import (
     Edupage,
@@ -128,3 +129,23 @@ async def test_get_notifications_raises_update_failed_on_api_error():
     api.get_notifications.side_effect = AttributeError("missing field")
     with pytest.raises(UpdateFailed, match="get_notifications"):
         await _wrapper(api).get_notifications()
+
+
+async def test_switch_to_child_uses_student_person_id():
+    api = MagicMock()
+    wrapper = _wrapper(api)
+    student = type("Student", (), {"person_id": 42})()
+
+    switched = await wrapper.switch_to_child(student)
+
+    api.switch_to_child.assert_called_once_with(42)
+    assert switched is True
+
+
+async def test_switch_to_child_is_noop_for_non_parent_accounts():
+    api = MagicMock()
+    api.switch_to_child.side_effect = NotParentException()
+
+    switched = await _wrapper(api).switch_to_child(42)
+
+    assert switched is False

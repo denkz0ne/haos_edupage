@@ -71,6 +71,19 @@ def test_existing_notifications_form_initial_baseline(coordinator):
     assert triggered == []
 
 
+def test_event_entity_filters_out_sibling_notifications(coordinator):
+    coordinator.data["student"]["class_names"] = ["4b"]
+    coordinator.data["notifications"] = [
+        _event(1, "sprava", recipient="Max Example"),
+        _event(2, "sprava", recipient="Anna Example"),
+        _event(3, "sprava", recipient="4b · Trieda"),
+    ]
+
+    entity = _entity(coordinator)
+
+    assert [event.event_id for event in entity._notifications()] == [1, 3]
+
+
 def test_new_supported_notifications_are_triggered_oldest_first(coordinator):
     """Every supported new timeline item is emitted exactly once."""
     entity = _entity(coordinator)

@@ -136,9 +136,7 @@ async def test_resolve_recipients_raises_on_unknown():
 
 
 async def test_send_message_passes_recipient_ids_not_objects():
-    """send_message must hand the API resolved recipient ID strings, not the
-    account objects (edupage-api 0.12.5 rejects EduStudent/EduTeacher subclasses
-    via an exact EduAccount type check)."""
+    """send_message must hand the API resolved recipient ID strings."""
     api = MagicMock()
     student = _Account(1, "Alice", get_id="Student123")
     teacher = _Account(2, "Mrs Smith", get_id="Teacher456")
@@ -373,3 +371,20 @@ async def test_collect_data_records_all_sections_ok_when_nothing_fails():
     assert ok["grades"] is True
     assert ok["school_year"] is True
     assert ok["grades_per_term"] is True
+
+
+async def test_collect_data_continues_after_a_single_timetable_day_fails():
+    edupage = _edupage_with_grades_failing()
+    edupage.get_grades = AsyncMock(return_value=[])
+    lesson = SimpleNamespace(is_cancelled=False)
+    edupage.get_timetable = AsyncMock(
+        side_effect=[RuntimeError("Insufficient privileges"), [lesson], *([[]] * 12)]
+    )
+
+    data = await _collect_data(edupage, _OkStudent(), "Max")
+
+    assert edupage.get_timetable.await_count == 14
+    successful_day = edupage.get_timetable.await_args_list[1].args[1]
+    assert data["timetable"][successful_day] == [lesson]
+    assert data["data_ok"]["timetable"] is True
+    assert data["data_ok"]["timetable_partial"] is True

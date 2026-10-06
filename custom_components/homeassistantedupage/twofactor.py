@@ -1,22 +1,19 @@
 """Modern app-code two-factor authentication for EduPage.
 
-The installed `edupage-api==0.12.5` library implements the *old* two-factor
-flow: it parses the hidden `<input value="...">` fields (`csrfauth`, `au`,
-`gu`) from the 2FA page HTML (`Login._extract_two_factor_fields`). Schools that
-rolled out the newer React login page no longer render those hidden inputs —
-the challenge is embedded in a JS `props` variable and the code is submitted
-via the same JSON-RPC `login` endpoint the library already uses.
+Some EduPage accounts use a React two-factor challenge instead of hidden
+`<input value="...">` fields (`csrfauth`, `au`, `gu`). In that flow the
+challenge is embedded in a JS `props` variable and the code is submitted via
+the same JSON-RPC `login` endpoint the library uses.
 
 As a result `api.login()` raises
 `BadCredentialsException("EduPage did not provide two-factor fields")` for any
 2FA-protected account on such schools, before the integration's TOTP page is
 ever shown.
 
-This module is a self-contained, minimal driver that replaces only the broken
-2FA part of the flow, so the config flow keeps its existing "enter the
-confirmation code" page. It reuses `edupage-api` for the JSON-RPC wire format
-(`RequestData`) and for reloading the resulting session (`Login.reload_data`),
-so the installed library is never patched.
+This module is a self-contained driver for that challenge, so the config flow
+keeps its existing "enter the confirmation code" page. It reuses
+`edupage-api` for the JSON-RPC wire format (`RequestData`) and for reloading the
+resulting session (`Login.reload_data`), so the library is never patched.
 """
 
 import json

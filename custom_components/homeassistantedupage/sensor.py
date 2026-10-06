@@ -545,6 +545,7 @@ class EduPageNotificationSensor(StateRestoringSensor):
         self._data_key = "notifications"
         self._notifications = notifications
         self._student_id = student_id
+        self._student_display_name = student_name
         self._student_name = unidecode(student_name).replace(" ", "_").lower()
         self._attr_device_info = student_device_info(student_id, student_name)
 
@@ -559,7 +560,18 @@ class EduPageNotificationSensor(StateRestoringSensor):
 
     @property
     def _current_notifications(self):
-        return self.coordinator.data.get("notifications", [])
+        student = self.coordinator.data.get("student", {})
+        class_names = student.get("class_names", [])
+        return [
+            event
+            for event in self.coordinator.data.get("notifications", [])
+            if event_matches_student(
+                event,
+                self._student_id,
+                self._student_display_name,
+                class_names,
+            )
+        ]
 
     @property
     def state(self):
