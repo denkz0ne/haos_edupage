@@ -134,7 +134,7 @@ test('timetable columns belong to each pupil; double lessons span both periods',
   assert.match(tableA, /title="Slovenský jazyk a literatúra"/);
   assert.match(tableA, /scope="row"/);
   assert.match(tableA, /<tr class="today">/);
-  panel._events['calendar.a'].push(lesson('06', '12', '00', 45, 'Vlastiveda'));
+  panel._events['calendar.a'].push(lesson('06', '12', '00', 45, 'VLA'));
   assert.match(panel.schedule(student('a')), />VLA</);
 });
 

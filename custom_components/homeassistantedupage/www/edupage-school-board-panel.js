@@ -37,7 +37,6 @@ const subjectLabel = (name) => ({
   'výtvarná výchova': 'VV', 'hudobná výchova': 'HV', 'náboženská výchova': 'NV',
   'etická výchova': 'EV', 'informatika': 'INF', 'prírodoveda': 'PRI',
   'dejepis': 'DEJ', 'fyzika': 'FYZ', 'chémia': 'CHE', 'biológia': 'BIO',
-  'vlastiveda': 'VLA',
   'geografia': 'GEO', 'občianska náuka': 'OBN', 'technika': 'TECH',
   'človek a príroda': 'ČaP', 'človek a spoločnosť': 'ČaS', 'človek a svet práce': 'ČaSP',
 }[name.toLocaleLowerCase('sk')] || (name.length > 14 ? name.split(/\s+/).filter((word) => word.length > 1).slice(0, 5).map((word) => word[0]).join('').toLocaleUpperCase('sk') : name));

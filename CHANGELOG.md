@@ -5,7 +5,7 @@ Verzie tohto forku používajú formát `YYYY.MM.N`, kde `N` je poradové čísl
 ## 2026.10.4
 
 - Dnešný riadok rozvrhu je jemne modrý, aktuálna hodina výraznejšia a nasledujúca nemá osobitné označenie; správy sa pred rozbalením zobrazia najviac v počte 10.
-- Predmet Vlastiveda sa zobrazuje ako VLA. Popis hodiny obsahuje triedy a skupiny, ktoré poskytuje EduPage API.
+- Skratka predmetu sa preberá z poľa `short` v EduPage API (napr. VLA); popis hodiny obsahuje API triedy a skupiny.
 - Trieda dieťaťa sa pri chýbajúcom výsledku `get_classes()` doplní z jeho rozvrhu. Triedne správy a úlohy bez potvrdenej zhody triedy sa nezdieľajú medzi deťmi.
 - Pridaný senzor dochádzky so stavom a posledným príchodom/odchodom; udalosti rozlišujú oba smery.
 

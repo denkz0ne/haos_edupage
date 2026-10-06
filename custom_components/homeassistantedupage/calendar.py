@@ -139,7 +139,12 @@ class EdupageCalendar(CoordinatorEntity, CalendarEntity):
         local_tz = ZoneInfo(self.hass.config.time_zone)
         start_time = datetime.combine(day, lesson.start_time).astimezone(local_tz)
         end_time = datetime.combine(day, lesson.end_time).astimezone(local_tz)
-        lesson_subject = lesson.subject.name if lesson.subject else "Neznámy predmet"
+        if lesson.subject:
+            lesson_subject = (
+                getattr(lesson.subject, "short", None) or lesson.subject.name
+            )
+        else:
+            lesson_subject = "Neznámy predmet"
         lesson_subject_prefix = "[Odpadlo] " if lesson.is_cancelled else ""
 
         cal_event = CalendarEvent(

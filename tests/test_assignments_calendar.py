@@ -1,6 +1,6 @@
 """Tests for the EduPage homework and exam calendar."""
 
-from datetime import date, datetime
+from datetime import date, datetime, time
 from enum import Enum
 import logging
 from types import SimpleNamespace
@@ -12,6 +12,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from custom_components.homeassistantedupage.calendar import (
     EduPageAssignmentsCalendar,
+    EdupageCalendar,
     _parse_notification_date,
 )
 from custom_components.homeassistantedupage.const import DOMAIN
@@ -80,6 +81,60 @@ def test_parse_notification_date_accepts_supported_values():
     )
     assert _parse_notification_date("invalid") is None
     assert _parse_notification_date(None) is None
+
+
+def test_timetable_event_uses_subject_short_code_from_edupage_api(hass):
+    """Timetable subject display comes from the API model, not a local map."""
+    coordinator = DataUpdateCoordinator(
+        hass,
+        logging.getLogger("test"),
+        name="test",
+        config_entry=None,
+    )
+    coordinator.data = {"student": {"id": 1, "name": "Max Example"}}
+    entity = EdupageCalendar(coordinator, {})
+    entity.hass = hass
+    lesson = SimpleNamespace(
+        teachers=[],
+        classes=[],
+        groups=[],
+        classrooms=[],
+        start_time=time(8, 0),
+        end_time=time(8, 45),
+        subject=SimpleNamespace(short="VLA", name="Vlastiveda"),
+        is_cancelled=False,
+    )
+
+    event = entity.map_lesson_to_calender_event(lesson, date(2026, 10, 6))
+
+    assert event.summary == "VLA"
+
+
+def test_timetable_event_falls_back_to_api_subject_name_when_short_missing(hass):
+    """If EduPage has no short code, preserve its subject name."""
+    coordinator = DataUpdateCoordinator(
+        hass,
+        logging.getLogger("test"),
+        name="test",
+        config_entry=None,
+    )
+    coordinator.data = {"student": {"id": 1, "name": "Max Example"}}
+    entity = EdupageCalendar(coordinator, {})
+    entity.hass = hass
+    lesson = SimpleNamespace(
+        teachers=[],
+        classes=[],
+        groups=[],
+        classrooms=[],
+        start_time=time(8, 0),
+        end_time=time(8, 45),
+        subject=SimpleNamespace(short=None, name="Vlastiveda"),
+        is_cancelled=False,
+    )
+
+    event = entity.map_lesson_to_calender_event(lesson, date(2026, 10, 6))
+
+    assert event.summary == "Vlastiveda"
 
 
 def test_homework_maps_to_all_day_calendar_event(assignments_calendar):
