@@ -100,11 +100,14 @@ async def _collect_data(edupage, student, student_name):
 
     today = datetime.now().date()
 
+    # Keep Monday's lessons when the coordinator refreshes mid-week so the
+    # weekly sidebar timetable can render a complete Monday–Friday grid.
+    timetable_start = today - timedelta(days=today.weekday())
     timetable_data = {}
     timetable_data_canceled = {}
     timetable_ok = False
     for offset in range(14):
-        current_date = today + timedelta(days=offset)
+        current_date = timetable_start + timedelta(days=offset)
         try:
             timetable = await edupage.get_timetable(
                 student, current_date
@@ -364,6 +367,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
     _LOGGER.debug("INIT forwarded")
 
+    # The school board is a native custom sidebar panel, shared by all EduPage
+    # config entries. Its payload is resolved from the entity registry at read
+    # time so renamed entities keep working.
+    from .panel import async_setup_panel
+
+    await async_setup_panel(hass)
+
     await _setup_services(hass)
 
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
@@ -566,5 +576,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
+        if not hass.data[DOMAIN]:
+            from .panel import async_unsetup_panel
+
+            async_unsetup_panel(hass)
 
     return unload_ok
