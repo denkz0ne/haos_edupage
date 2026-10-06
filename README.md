@@ -31,6 +31,7 @@ Tento repozitár je slovenský fork projektu [`rine77/homeassistantedupage`](htt
 - opätovné prihlásenie po vypršaní relácie,
 - obnova posledných známych stavov po reštarte Home Assistanta alebo dočasnom výpadku EduPage,
 - diagnostika s anonymizovaným súhrnom dostupných schopností a údajov.
+- vlastný responzívny bočný panel EduPage s rozvrhom, správami, domácimi úlohami a známkami.
 
 ## Požiadavky
 
@@ -349,7 +350,7 @@ Podľa typu udalosti môžu atribúty obsahovať ID udalosti EduPage, žiaka, pr
 
 Udalosť príchodu do školy znamená iba to, že EduPage zaznamenal príchod. Bez spoľahlivej informácie o odchode ju nemožno považovať za trvalý stav „žiak je v škole“.
 
-Integrácia zatiaľ nemá vlastnú špeciálnu kartu dashboardu. Použiť možno štandardné karty Home Assistanta – Kalendár, Entity, Markdown a šablónové karty.
+Po načítaní integrácie sa v bočnom paneli Home Assistanta zobrazí vlastná položka **EduPage**. Otvorí natívny custom panel integrácie so spoločným prehľadom nakonfigurovaných žiakov; nie je potrebné vytvárať ani upravovať Lovelace dashboard. Panel používa existujúce kalendáre, senzory a zoznam úloh integrácie. Návrh a dátové mapovanie sú v [dokumente EduPage School Board](docs/EDUPAGE_SCHOOL_BOARD_DESIGN.md).
 
 ## Suplovanie, zmeny rozvrhu a zvonenie
 

@@ -2,6 +2,12 @@
 
 Verzie tohto forku používajú formát `YYYY.MM.N`, kde `N` je poradové číslo vydania v danom mesiaci. Každá používateľsky viditeľná aktualizácia má zvýšiť verziu v `manifest.json` a pridať krátky záznam sem.
 
+## 2026.10.0
+
+- Pridaný vlastný natívny EduPage panel v sidebare Home Assistanta podľa návrhu rodinnej nástenky.
+- Panel zobrazuje týždenný rozvrh, správy, úlohy, známky a školské súhrny pre nakonfigurovaných žiakov.
+- Rozvrh sa načítava od pondelka, aby sa zachoval celý týždeň aj po obnove uprostred týždňa.
+
 ## 2026.09.2
 
 - Skrátené predvolené názvy entít na formát `[IN] Názov` podľa iniciál dieťaťa, napr. `[PE] Dejepis` alebo `[PE] Nesplnené DÚ`.

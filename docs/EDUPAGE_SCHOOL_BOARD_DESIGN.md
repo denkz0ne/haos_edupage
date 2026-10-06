@@ -1,8 +1,8 @@
 # EduPage School Board / školská nástenka
 
-Návrh samostatného Home Assistant dashboardu zobrazovaného v sidebare ako **Škola**. Cieľom nie je kopírovať EduPage, ale zredukovať ho na rodinný prehľad: **čo sa deje teraz, čo bude najbližšie a na čo netreba zabudnúť**.
+Návrh vlastného natívneho Home Assistant custom panelu v bočnej navigácii ako **EduPage**, vizuálne zodpovedajúceho mocku. Nejde o Lovelace dashboard ani Lovelace kartu. Cieľom nie je kopírovať EduPage, ale zredukovať ho na rodinný prehľad: **čo sa deje teraz, čo bude najbližšie a na čo netreba zabudnúť**.
 
-Primárny scenár je široký desktop/tablet panel s dvoma deťmi. Ľavá polovica obrazovky patrí prvému dieťaťu, pravá polovica druhému. Obe strany majú rovnakú informačnú štruktúru, ale vlastný stav a vlastné zvýraznenia.
+Primárny scenár je široký desktop/tablet sidepanel s dvoma deťmi. Ľavá polovica obrazovky patrí prvému dieťaťu, pravá polovica druhému. Obe strany majú rovnakú informačnú štruktúru, ale vlastný stav a vlastné zvýraznenia.
 
 ## 1. Základný layout
 
@@ -217,13 +217,13 @@ Rozvrh zostáva týždenný. Fokus je na úlohách, správach a ďalšom školsk
 MVP nesmie používať údaje len preto, že by sa do dizajnu hodili. Ak nie sú dnes stabilne exponované integráciou, do nástenky zatiaľ nepatria.
 ## 11. Odporúčaná technická cesta
 
-### Fáza A – dashboard z dnešných entít
+### Fáza A – natívny custom panel z dnešných entít
 
-Samostatný Lovelace dashboard **Škola**, nastavený `show_in_sidebar: true`.
+Panel registrovaný cez Home Assistant frontend ako položka bočnej navigácie **EduPage**, s vlastným Web Componentom a štýlmi. Nepoužíva Lovelace dashboard, kartu ani YAML konfiguráciu používateľa.
 
-Backend integrácie zostane zdrojom dát. Týždenný rozvrh sa v MVP skladá z `calendar.get_events` pre pondelok–piatok. Správy sa čítajú z `Upozornenia.events`, DÚ z `todo` a assignment senzorov a známky z predmetových senzorov.
+Backend integrácie zostáva zdrojom dát. Panel načítava týždenné udalosti kalendára, položky natívnej `todo` entity, atribúty upozornení a predmetových senzorov. Identifikátory entít sa riešia podľa entity registry/unique ID, aby fungovali aj po premenovaní entity. WebSocket vracia iba zobrazovacie údaje a mapovanie entít, nikdy prihlasovacie údaje ani EduPage session.
 
-### Fáza B – dashboard-friendly model
+### Fáza B – panel-friendly model
 
 Až keď sa MVP osvedčí, môže integrácia doplniť kompaktné štruktúrované entity/atribúty pre:
 
@@ -232,9 +232,9 @@ Až keď sa MVP osvedčí, môže integrácia doplniť kompaktné štruktúrovan
 - čistejší message feed,
 - školský súhrn.
 
-### Fáza C – vlastná Lovelace karta
+### Fáza C – ďalšie úpravy vlastného panelu
 
-Custom karta má zmysel až po stabilizovaní layoutu a dátového modelu. Nezačínať vlastným panelom ani novými backend entitami len kvôli mockupu.
+Custom panel je primárnym rozhraním podľa mocku. Úpravy jeho layoutu a dátového modelu nadväzujú na spätnú väzbu z reálneho používania; samostatná Lovelace karta nie je súčasťou tohto návrhu.
 ## 12. Issue backlog / návrhy na vylepšenie
 
 > GitHub Issues sú momentálne v repozitári vypnuté. Nasledujúce bloky sú pripravené ako issue návrhy na vytvorenie po ich zapnutí.
@@ -312,11 +312,11 @@ Navrhované polia:
 
 Toto je dashboardový „index“, nie náhrada detailných entít.
 
-### Issue E — EduPage School Board Lovelace card
+### Issue E — EduPage School Board custom panel
 
-**Cieľ:** po stabilizovaní vyššie uvedeného dátového modelu vytvoriť modernú HA kartu pre jedno dieťa.
+**Cieľ:** implementovať rodinný prehľad ako natívny custom panel Home Assistanta, ktorý zodpovedá schválenému mocku.
 
-Karta má vedieť:
+Panel má vedieť:
 
 - týždenný rozvrh Po–Pi × 1.–N. hodina,
 - zvýraznenie konkrétnej bunky aktuálnej hodiny,
@@ -324,17 +324,17 @@ Karta má vedieť:
 - DÚ/test/zmena badges priamo pri hodinách,
 - správy v samostatných boxoch a v plnom znení,
 - kompaktný zoznam DÚ a známok,
-- responzívne použitie v grid dashboarde.
+- responzívne použitie na desktope, tablete a mobile.
 
-Dve inštancie karty vedľa seba vytvoria rodinnú nástenku pre dve deti. Tým sa multi-child layout nevkladá natvrdo do jednej obrovskej karty.
+Panel zobrazuje nakonfigurované deti vedľa seba a na úzkej obrazovke ich skladá pod seba.
 
 ## 13. MVP poradie
 
-1. prototyp dvojstĺpcového dashboardu z dnešných entít,
+1. prototyp dvojstĺpcového custom panelu z dnešných entít,
 2. structured weekly timetable,
 3. recent grades feed,
 4. message feed,
 5. daily overview,
-6. až potom vlastná Lovelace karta.
+6. následné doladenie custom panelu podľa používania.
 
-Toto poradie zámerne odkladá frontendový custom komponent. Najprv treba zistiť, či informačná hierarchia funguje v reálnom používaní; inak len veľmi elegantne zakódujeme zlý layout.
+Panel používa dáta dnešných entít. Štruktúrovanejší dátový model môže neskôr zjednodušiť vykresľovanie, ale nemení ho na Lovelace dashboard.
