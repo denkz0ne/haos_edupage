@@ -34,6 +34,18 @@ Tento repozitár je slovenský fork projektu [`rine77/homeassistantedupage`](htt
 - diagnostika s anonymizovaným súhrnom dostupných schopností a údajov.
 - vlastný responzívny bočný panel EduPage s rozvrhom, správami, domácimi úlohami a známkami.
 
+## Školská nástenka
+
+Po načítaní integrácie je v navigácii Home Assistanta dostupný panel **EduPage**. Nástenka zobrazuje žiakov vedľa seba na jednej stránke: týždenný rozvrh, celé správy, Úlohy a Známky a menšie školské údaje. Ďalšie položky sa rozbaľujú priamo v príslušnej sekcii. Na mobile sa žiaci skladajú pod seba; rozvrh možno vodorovne posúvať.
+
+Hlavičky, správy a známky sa zobrazia hneď po načítaní zoznamu žiakov. Rozvrhy a úlohy sa dopĺňajú samostatne, takže jedna pomalá alebo neúspešná odpoveď nezadrží celú nástenku. Opakované otvorenie využíva údaje v pamäti aktuálneho pripojenia; tlačidlo obnovenia ich načíta znova. Prázdny rozvrh znamená, že kalendár pre daný týždeň neposkytol hodiny.
+
+Náhľad so vzorovými, vymyslenými údajmi:
+
+![Školská nástenka](docs/img/school-board-light.png)
+
+Podrobnosti vizuálnej kontroly a ďalšie náhľady: [vizuálne overenie panelu](docs/EDUPAGE_PANEL_VISUAL_REVIEW.md).
+
 ## Požiadavky
 
 Verzia integrácie 0.8.0 a novšia vyžaduje Home Assistant 2023.11.0 alebo novší, pretože používa natívnu entitu zoznamu úloh.
